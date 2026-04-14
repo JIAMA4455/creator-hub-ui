@@ -1,142 +1,298 @@
+// --- State Management ---
+// Текущий пользователь (Hardcoded для прототипа)
+const currentUser = { id: 'user_1', name: 'Daniil Titov' };
+
+// Инициализация базы данных (Local Storage)
+const defaultIdeas = [
+    { id: 1, title: "Обзор M5 (Скрытые меню)", desc: "Показать скрытые комбинации кнопок в салоне, которые включают сервисные режимы. \n\nРеференс: BMW TikToker", author: "Daniil Titov", likedBy: ['user_2'], comments: [{id: 101, author: "Evgeniy", text: "Отличная идея, заберу на этой неделе!"}], status: "Назначена", x:0, y:0, vx:0, vy:0 },
+    { id: 2, title: "Пранк с ключами (POV)", desc: "Формат от первого лица, якобы потерял ключи от авто, но заводишь с телефона.", author: "Producer", likedBy: ['user_1', 'user_3'], comments: [], status: "Новая", x:0, y:0, vx:0, vy:0 }
+];
+
+let ideas = JSON.parse(localStorage.getItem('ch_ideas'));
+if (!ideas) {
+    ideas = defaultIdeas;
+    saveIdeas();
+}
+
+function saveIdeas() {
+    localStorage.setItem('ch_ideas', JSON.stringify(ideas));
+    updateKPIs();
+}
+
+// --- Navigation ---
 function switchTab(tabId, titleText) {
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => item.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
 
-    const clickedItem = Array.from(navItems).find(
-        item => item.getAttribute('onclick').includes(tabId)
-    );
-    if (clickedItem) {
-        clickedItem.classList.add('active');
-    }
-
-    const allTabs = document.querySelectorAll('.tab-content');
-    allTabs.forEach(tab => {
-        tab.classList.remove('active');
-        tab.style.display = 'none';
+    document.querySelectorAll('.tab-content').forEach(t => {
+        t.classList.remove('active');
+        t.style.display = 'none';
     });
 
     const targetTab = document.getElementById('tab-' + tabId);
     if (targetTab) {
         targetTab.classList.add('active');
         targetTab.style.display = 'block';
-        
-        // Инициализация Canvas при открытии вкладки идей
-        if (tabId === 'ideas' && document.getElementById('ideas-network').classList.contains('active')) {
-            initNetworkCanvas();
+        if (tabId === 'ideas') {
+            renderLinearView();
+            if (document.getElementById('ideas-network').classList.contains('active')) {
+                initNetworkCanvas();
+            }
         }
     }
-
-    const pageTitle = document.getElementById('page-title');
-    if (pageTitle) {
-        pageTitle.innerText = titleText;
-    }
+    document.getElementById('page-title').innerText = titleText;
 }
 
-// Переключение видов Идей (Линейный <-> Паутина)
 function switchIdeaView(viewType) {
-    const views = document.querySelectorAll('.view-container');
-    views.forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
     document.getElementById('ideas-' + viewType).classList.add('active');
 
-    const btns = document.querySelectorAll('.view-controls .btn-icon');
-    btns.forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view-controls .btn-icon').forEach(b => b.classList.remove('active'));
     event.currentTarget.classList.add('active');
 
-    if (viewType === 'network') {
-        initNetworkCanvas();
+    if (viewType === 'network') initNetworkCanvas();
+    else cancelAnimationFrame(animationFrameId);
+}
+
+// --- Modals ---
+function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+window.onclick = function(e) {
+    if (e.target.classList.contains('modal')) e.target.style.display = "none";
+}
+
+// --- CRUD Ideas ---
+function openIdeaModal(id = null) {
+    const titleInput = document.getElementById('idea-title-input');
+    const descInput = document.getElementById('idea-desc-input');
+    const idInput = document.getElementById('idea-id');
+    const modalTitle = document.getElementById('idea-form-title');
+
+    if (id) {
+        const idea = ideas.find(i => i.id === id);
+        modalTitle.innerText = "Редактировать гипотезу";
+        titleInput.value = idea.title;
+        descInput.value = idea.desc;
+        idInput.value = idea.id;
     } else {
-        cancelAnimationFrame(animationFrameId); // Останавливаем анимацию, если ушли из паутины
+        modalTitle.innerText = "Создать гипотезу";
+        titleInput.value = "";
+        descInput.value = "";
+        idInput.value = "";
+    }
+    openModal('modal-idea-form');
+}
+
+function saveIdea() {
+    const title = document.getElementById('idea-title-input').value.trim();
+    const desc = document.getElementById('idea-desc-input').value.trim();
+    const id = document.getElementById('idea-id').value;
+
+    if (!title) return alert("Введите название!");
+
+    if (id) {
+        // Edit
+        const idea = ideas.find(i => i.id == id);
+        idea.title = title;
+        idea.desc = desc;
+    } else {
+        // Create
+        ideas.push({
+            id: Date.now(),
+            title,
+            desc,
+            author: currentUser.name,
+            likedBy: [],
+            comments: [],
+            status: "Новая",
+            x:0, y:0, vx:0, vy:0
+        });
+    }
+
+    saveIdeas();
+    closeModal('modal-idea-form');
+    renderLinearView();
+    if(document.getElementById('ideas-network').classList.contains('active')) initNetworkCanvas();
+}
+
+function deleteIdea(id) {
+    if(confirm("Удалить идею?")) {
+        ideas = ideas.filter(i => i.id !== id);
+        saveIdeas();
+        closeModal('modal-comments');
+        renderLinearView();
     }
 }
 
-// ----------------------------------------------------
-// ЛОГИКА ПАУТИНЫ ТАЛАНТОВ (КАНВАС)
-// ----------------------------------------------------
-const mockIdeas = [
-    { id: 1, title: "Обзор M5 (Скрытые меню)", likes: 15, group: 'Review', x: 0, y: 0, vx: 0, vy: 0 },
-    { id: 2, title: "Сравнение выхлопа", likes: 45, group: 'Review', x: 0, y: 0, vx: 0, vy: 0 },
-    { id: 3, title: "Пранк с ключами", likes: 2, group: 'Entertainment', x: 0, y: 0, vx: 0, vy: 0 },
-    { id: 4, title: "Топ-3 ошибки при покупке", likes: 28, group: 'Guide', x: 0, y: 0, vx: 0, vy: 0 },
-    { id: 5, title: "Дрифт на снегу (SlowMo)", likes: 60, group: 'Entertainment', x: 0, y: 0, vx: 0, vy: 0 }
-];
+// --- Likes & Comments ---
+function toggleLike(id, event) {
+    if(event) event.stopPropagation();
+    const idea = ideas.find(i => i.id === id);
+    const index = idea.likedBy.indexOf(currentUser.id);
+    
+    if (index > -1) idea.likedBy.splice(index, 1); // Unlike
+    else idea.likedBy.push(currentUser.id); // Like
+    
+    saveIdeas();
+    renderLinearView();
+}
 
+function openCommentsModal(id) {
+    const idea = ideas.find(i => i.id === id);
+    document.getElementById('view-idea-title').innerText = idea.title;
+    document.getElementById('view-idea-author').innerHTML = `Автор: <b>${idea.author}</b> | Статус: ${idea.status} 
+        <span style="float:right; cursor:pointer; color:var(--text-link);" onclick="openIdeaModal(${idea.id}); closeModal('modal-comments')">✏️ Редактировать</span>
+        <span style="float:right; cursor:pointer; color:var(--red); margin-right:15px;" onclick="deleteIdea(${idea.id})">🗑️ Удалить</span>`;
+    document.getElementById('view-idea-desc').innerText = idea.desc;
+    document.getElementById('comment-idea-id').value = idea.id;
+    
+    renderComments(idea);
+    openModal('modal-comments');
+}
+
+function renderComments(idea) {
+    const list = document.getElementById('comments-list');
+    list.innerHTML = '';
+    
+    if(idea.comments.length === 0) {
+        list.innerHTML = '<div class="comment-text" style="color:var(--text-muted)">Нет комментариев. Будьте первым!</div>';
+        return;
+    }
+
+    idea.comments.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'comment-bubble';
+        div.innerHTML = `<span class="comment-author">${c.author}</span><span class="comment-text">${c.text}</span>`;
+        list.appendChild(div);
+    });
+    list.scrollTop = list.scrollHeight;
+}
+
+function addComment() {
+    const textInput = document.getElementById('new-comment-text');
+    const text = textInput.value.trim();
+    const id = parseInt(document.getElementById('comment-idea-id').value);
+
+    if (!text) return;
+
+    const idea = ideas.find(i => i.id === id);
+    idea.comments.push({ id: Date.now(), author: currentUser.name, text: text });
+    
+    saveIdeas();
+    textInput.value = '';
+    renderComments(idea);
+    renderLinearView(); // Обновляем счетчик на карточке
+}
+
+function handleCommentEnter(e) {
+    if (e.key === 'Enter') addComment();
+}
+
+// --- Render Views ---
+function updateKPIs() {
+    const totalEl = document.getElementById('kpi-total-ideas');
+    if(totalEl) totalEl.innerText = ideas.length;
+}
+
+function renderLinearView() {
+    const container = document.getElementById('ideas-linear');
+    container.innerHTML = '';
+
+    ideas.forEach(idea => {
+        const isLiked = idea.likedBy.includes(currentUser.id);
+        const likeClass = isLiked ? 'liked' : '';
+        const likeHeart = isLiked ? '❤️' : '🤍';
+
+        const card = document.createElement('div');
+        card.className = 'idea-card';
+        card.onclick = () => openCommentsModal(idea.id);
+        
+        card.innerHTML = `
+            <div class="idea-header">
+                <div class="idea-title">${idea.title}</div>
+                <div class="idea-status">${idea.status}</div>
+            </div>
+            <p class="idea-desc">${idea.desc}</p>
+            <div class="idea-footer">
+                <span class="idea-meta">Автор: ${idea.author}</span>
+                <div class="idea-actions">
+                    <span class="action-btn">💬 ${idea.comments.length}</span>
+                    <span class="action-btn ${likeClass}" onclick="toggleLike(${idea.id}, event)">${likeHeart} ${idea.likedBy.length}</span>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// --- Network Canvas (Spiderweb) ---
 let animationFrameId;
-
 function initNetworkCanvas() {
     const canvas = document.getElementById('network-canvas');
     const ctx = canvas.getContext('2d');
-    
-    // Подгоняем размер под контейнер
     const container = document.getElementById('ideas-network');
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
 
-    // Начальные случайные позиции и векторы движения
-    mockIdeas.forEach(idea => {
-        idea.x = Math.random() * canvas.width;
-        idea.y = Math.random() * canvas.width;
-        idea.vx = (Math.random() - 0.5) * 0.4; // Очень медленное движение
-        idea.vy = (Math.random() - 0.5) * 0.4;
-        idea.radius = Math.max(15, idea.likes * 1.5); // Размер зависит от лайков
+    // Инициализация координат если их нет
+    ideas.forEach(idea => {
+        if(idea.x === 0 && idea.y === 0) {
+            idea.x = Math.random() * canvas.width;
+            idea.y = Math.random() * canvas.height;
+            idea.vx = (Math.random() - 0.5) * 0.4; 
+            idea.vy = (Math.random() - 0.5) * 0.4;
+        }
     });
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Движение и отскок от стен
-        mockIdeas.forEach(idea => {
+        ideas.forEach(idea => {
             idea.x += idea.vx;
             idea.y += idea.vy;
+            // Размер круга зависит от лайков
+            idea.radius = Math.max(15, 15 + idea.likedBy.length * 4);
 
             if (idea.x - idea.radius < 0 || idea.x + idea.radius > canvas.width) idea.vx *= -1;
             if (idea.y - idea.radius < 0 || idea.y + idea.radius > canvas.height) idea.vy *= -1;
         });
 
-        // Рисуем линии (паутину) между близкими идеями
-        for (let i = 0; i < mockIdeas.length; i++) {
-            for (let j = i + 1; j < mockIdeas.length; j++) {
-                const dx = mockIdeas[i].x - mockIdeas[j].x;
-                const dy = mockIdeas[i].y - mockIdeas[j].y;
+        // Линии (Паутина)
+        for (let i = 0; i < ideas.length; i++) {
+            for (let j = i + 1; j < ideas.length; j++) {
+                const dx = ideas[i].x - ideas[j].x;
+                const dy = ideas[i].y - ideas[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Если идеи близко друг к другу, соединяем линией
                 if (dist < 250) {
                     ctx.beginPath();
-                    ctx.moveTo(mockIdeas[i].x, mockIdeas[i].y);
-                    ctx.lineTo(mockIdeas[j].x, mockIdeas[j].y);
-                    ctx.strokeStyle = `rgba(88, 101, 242, ${1 - dist/250})`; // Blurple color, fades out
+                    ctx.moveTo(ideas[i].x, ideas[i].y);
+                    ctx.lineTo(ideas[j].x, ideas[j].y);
+                    ctx.strokeStyle = `rgba(88, 101, 242, ${1 - dist/250})`; 
                     ctx.lineWidth = 1;
                     ctx.stroke();
                 }
             }
         }
 
-        // Рисуем кружочки (Идеи)
-        mockIdeas.forEach(idea => {
+        // Узлы (Идеи)
+        ideas.forEach(idea => {
             ctx.beginPath();
             ctx.arc(idea.x, idea.y, idea.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#23a559'; // Green color for ideas
-            ctx.fill();
-            
-            // Свечение (Glow) вокруг больших кругов
+            ctx.fillStyle = '#23a559';
             ctx.shadowBlur = 15;
             ctx.shadowColor = '#4ade80';
             ctx.fill();
-            ctx.shadowBlur = 0; // Сброс теней для текста
+            ctx.shadowBlur = 0;
 
-            // Текст (Название)
             ctx.fillStyle = '#ffffff';
             ctx.font = '12px Inter, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // Если текст слишком длинный, обрезаем
             let shortTitle = idea.title.length > 15 ? idea.title.substring(0,15) + '...' : idea.title;
-            
-            // Пишем текст под кружком
             ctx.fillText(shortTitle, idea.x, idea.y + idea.radius + 15);
-            // Пишем лайки внутри кружка
-            ctx.fillText(`❤️ ${idea.likes}`, idea.x, idea.y);
+            ctx.fillText(`❤️ ${idea.likedBy.length}`, idea.x, idea.y);
         });
 
         animationFrameId = requestAnimationFrame(draw);
@@ -146,6 +302,12 @@ function initNetworkCanvas() {
     draw();
 }
 
+// Init
 document.addEventListener('DOMContentLoaded', () => {
-    switchTab('dashboard', 'Сводка');
+    updateKPIs();
+    document.getElementById('current-username').innerText = currentUser.name;
+    // Initial UI state setup is handled by active classes in HTML, but we need to render lists
+    if (document.getElementById('tab-ideas').classList.contains('active')) {
+        renderLinearView();
+    }
 });
