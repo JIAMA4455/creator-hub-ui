@@ -130,38 +130,66 @@
                 <!-- Ideas Tab -->
                 <div id="tab-ideas" class="tab-content">
                     <div class="ideas-toolbar">
-                        <button class="btn-primary">Создать идею</button>
+                        <div class="view-controls">
+                            <button class="btn-icon active" onclick="switchIdeaView('linear')" title="Линейный вид">📋</button>
+                            <button class="btn-icon" onclick="switchIdeaView('network')" title="Паутина талантов">🕸️</button>
+                        </div>
                         <input type="text" class="search-box" placeholder="Поиск гипотез...">
+                        <button class="btn-primary">Создать идею</button>
                     </div>
                     
-                    <div class="idea-card">
-                        <div class="idea-header">
-                            <div class="idea-title">Обзор фишек BMW M5 (Скрытые меню)</div>
-                            <div class="idea-status tag-assigned">Назначена</div>
+                    <!-- Линейный вид (Linear View) -->
+                    <div id="ideas-linear" class="view-container active">
+                        <div class="idea-card">
+                            <div class="idea-header">
+                                <div class="idea-title">Обзор фишек BMW M5 (Скрытые меню)</div>
+                                <div class="idea-status tag-assigned">Назначена</div>
+                            </div>
+                            <p class="idea-desc">Показать скрытые комбинации кнопок в салоне, которые включают сервисные режимы.</p>
+                            <div class="idea-footer">
+                                <span class="idea-meta">Автор: Daniil | Исполнитель: Evgeniy</span>
+                                <div class="idea-actions">
+                                    <span class="action">💬 3</span>
+                                    <span class="action">❤️ 15</span>
+                                </div>
+                            </div>
                         </div>
-                        <p class="idea-desc">Показать скрытые комбинации кнопок в салоне, которые включают сервисные режимы.</p>
-                        <div class="idea-footer">
-                            <span class="idea-meta">Автор: Daniil | Исполнитель: Evgeniy</span>
-                            <div class="idea-actions">
-                                <span class="action">💬 3</span>
-                                <span class="action">❤️ 5</span>
+                        
+                        <div class="idea-card">
+                            <div class="idea-header">
+                                <div class="idea-title">Пранк с ключами (POV)</div>
+                                <div class="idea-status tag-new">Новая</div>
+                            </div>
+                            <p class="idea-desc">Формат от первого лица, якобы потерял ключи от авто, но заводишь с телефона.</p>
+                            <div class="idea-footer">
+                                <span class="idea-meta">Автор: Producer | Исполнитель: Нет</span>
+                                <div class="idea-actions">
+                                    <span class="action">💬 0</span>
+                                    <span class="action">❤️ 2</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="idea-card">
+                            <div class="idea-header">
+                                <div class="idea-title">Сравнение выхлопа M5 vs RS6</div>
+                                <div class="idea-status tag-done">Завершена</div>
+                            </div>
+                            <p class="idea-desc">Динамичный монтаж звука выхлопа двух машин с голосованием в комментариях.</p>
+                            <div class="idea-footer">
+                                <span class="idea-meta">Автор: Arina | Исполнитель: Arina</span>
+                                <div class="idea-actions">
+                                    <span class="action">💬 12</span>
+                                    <span class="action">❤️ 45</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="idea-card">
-                        <div class="idea-header">
-                            <div class="idea-title">Пранк с ключами (POV)</div>
-                            <div class="idea-status tag-new">Новая</div>
-                        </div>
-                        <p class="idea-desc">Формат от первого лица, якобы потерял ключи от авто, но заводишь с телефона.</p>
-                        <div class="idea-footer">
-                            <span class="idea-meta">Автор: Producer | Исполнитель: Нет</span>
-                            <div class="idea-actions">
-                                <span class="action">💬 0</span>
-                                <span class="action">❤️ 1</span>
-                            </div>
-                        </div>
+
+                    <!-- Вид Паутины (Network View) -->
+                    <div id="ideas-network" class="view-container">
+                        <!-- Canvas для отрисовки линий и кружочков будет добавлен через JS -->
+                        <canvas id="network-canvas"></canvas>
                     </div>
                 </div>
 
