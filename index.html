@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=gg+sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Servers Sidebar (Super Minimal) -->
+        <nav class="server-sidebar">
+            <div class="server-icon active">CH</div>
+            <div class="divider"></div>
+            <div class="server-icon add">+</div>
+        </nav>
+
+        <!-- Channels Sidebar -->
+        <nav class="channel-sidebar">
+            <div class="sidebar-header">
+                <h2>Creator Hub</h2>
+            </div>
+            
+            <div class="channel-group">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+            <ul class="nav-links">
+                <li class="nav-item active" onclick="switchTab('dashboard', 'Сводка')">
+                    <span class="icon">📊</span> Дашборд
+                </li>
+                <li class="nav-item" onclick="switchTab('ideas', 'Библиотека идей')">
+                    <span class="icon">💡</span> Библиотека идей
+                </li>
+                <li class="nav-item" onclick="switchTab('creators', 'Команда креаторов')">
+                    <span class="icon">👥</span> Креаторы
+                </li>
+            </ul>
+
+            <div class="channel-group">АНАЛИТИКА</div>
+            <ul class="nav-links">
+                <li class="nav-item" onclick="switchTab('analytics', 'Аналитика аккаунтов')">
+                    <span class="icon">📈</span> Аккаунты
+                </li>
+                <li class="nav-item" onclick="switchTab('comments', 'Анализ комментариев')">
+                    <span class="icon">💬</span> Комментарии
+                </li>
+                <li class="nav-item" onclick="switchTab('reports', 'Командные отчёты')">
+                    <span class="icon">📑</span> Отчёты
+                </li>
+            </ul>
+
+            <!-- User Panel -->
+            <div class="user-panel">
+                <div class="avatar"></div>
+                <div class="user-info">
+                    <div class="username">Daniil Titov</div>
+                    <div class="status">Продюсер</div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="channel-name">
+                    <span class="hash">#</span>
+                    <h1 id="page-title">Дашборд</h1>
+                </div>
+            </header>
+
+            <div class="content-scroll">
+                <!-- Dashboard Tab -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="welcome-banner">
+                        <h2>Добро пожаловать в Creator Hub!</h2>
+                        <p>Это первая версия (скелет) платформы. Здесь мы будем отслеживать рост команды.</p>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Общие просмотры (7 дней)</div>
+                            <div class="kpi-value">1,245,000</div>
+                            <div class="kpi-trend positive">↑ +15% с прошлой недели</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Активные идеи</div>
+                            <div class="kpi-value">12</div>
+                            <div class="kpi-trend neutral">4 ждут назначения</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">В работе у креаторов</div>
+                            <div class="kpi-value">8</div>
+                            <div class="kpi-trend neutral">2 ролика на монтаже</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Тональность комментов</div>
+                            <div class="kpi-value">82% Позитив</div>
+                            <div class="kpi-trend negative">↓ упало на 2%</div>
+                        </div>
+                    </div>
+
+                    <!-- Top Creators Placeholder -->
+                    <div class="section-title">ТОП КРЕАТОРЫ НЕДЕЛИ</div>
+                    <div class="creators-list">
+                        <div class="creator-row">
+                            <div class="creator-avatar"></div>
+                            <div class="creator-details">
+                                <div class="creator-name">Evgeniy Gurin</div>
+                                <div class="creator-handle">@gurevgen</div>
+                            </div>
+                            <div class="creator-stats">
+                                <div class="stat"><span class="label">Views:</span> 850k</div>
+                                <div class="stat"><span class="label">ER:</span> 12.4%</div>
+                            </div>
+                        </div>
+                        <div class="creator-row">
+                            <div class="creator-avatar" style="background: #4ade80;"></div>
+                            <div class="creator-details">
+                                <div class="creator-name">Arina Bachieva</div>
+                                <div class="creator-handle">@arina_creator</div>
+                            </div>
+                            <div class="creator-stats">
+                                <div class="stat"><span class="label">Views:</span> 395k</div>
+                                <div class="stat"><span class="label">ER:</span> 15.1%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ideas Tab -->
+                <div id="tab-ideas" class="tab-content">
+                    <div class="ideas-toolbar">
+                        <button class="btn-primary">Создать идею</button>
+                        <input type="text" class="search-box" placeholder="Поиск гипотез...">
+                    </div>
+                    
+                    <div class="idea-card">
+                        <div class="idea-header">
+                            <div class="idea-title">Обзор фишек BMW M5 (Скрытые меню)</div>
+                            <div class="idea-status tag-assigned">Назначена</div>
+                        </div>
+                        <p class="idea-desc">Показать скрытые комбинации кнопок в салоне, которые включают сервисные режимы.</p>
+                        <div class="idea-footer">
+                            <span class="idea-meta">Автор: Daniil | Исполнитель: Evgeniy</span>
+                            <div class="idea-actions">
+                                <span class="action">💬 3</span>
+                                <span class="action">❤️ 5</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="idea-card">
+                        <div class="idea-header">
+                            <div class="idea-title">Пранк с ключами (POV)</div>
+                            <div class="idea-status tag-new">Новая</div>
+                        </div>
+                        <p class="idea-desc">Формат от первого лица, якобы потерял ключи от авто, но заводишь с телефона.</p>
+                        <div class="idea-footer">
+                            <span class="idea-meta">Автор: Producer | Исполнитель: Нет</span>
+                            <div class="idea-actions">
+                                <span class="action">💬 0</span>
+                                <span class="action">❤️ 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder for other tabs -->
+                <div id="tab-creators" class="tab-content"><h2 class="placeholder-text">Список профилей креаторов (В разработке)</h2></div>
+                <div id="tab-analytics" class="tab-content"><h2 class="placeholder-text">Графики по подключенным аккаунтам (В разработке)</h2></div>
+                <div id="tab-comments" class="tab-content"><h2 class="placeholder-text">Анализатор тональности (В разработке)</h2></div>
+                <div id="tab-reports" class="tab-content"><h2 class="placeholder-text">Командные выгрузки и PDF (В разработке)</h2></div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
