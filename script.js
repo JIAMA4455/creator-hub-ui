@@ -370,11 +370,20 @@ function loginWithInvite() {
         return;
     }
 
-    // 1. Проверяем, есть ли уже пользователь с таким ключом (повторный вход)
+    // 1. Ищем сам ключ в базе выданных инвайтов
+    const invite = dbInvites.find(i => i.code === code);
+    if (!invite) {
+        errorEl.innerText = "Неверный код приглашения";
+        return;
+    }
+
+    // 2. Ищем пользователя с этим ключом
     let user = dbUsers.find(u => u.token === code);
+
     if (user) {
+        // Аккаунт уже существует (повторный вход)
         if (!user.active) {
-            errorEl.innerText = "Доступ отозван";
+            errorEl.innerText = "Доступ по этому ключу заблокирован администратором";
             return;
         }
         // Если при входе ввели имя, обновляем его
@@ -384,42 +393,30 @@ function loginWithInvite() {
         localStorage.setItem('ch_token', user.token);
         errorEl.innerText = "";
         checkAuth();
-        return;
-    }
+    } else {
+        // Первый вход по этому ключу
+        if (!name) {
+            errorEl.innerText = "Для первой активации ключа введите ваше Имя";
+            return;
+        }
 
-    // 2. Первая активация нового ключа
-    if (!name) {
-        errorEl.innerText = "Для первой активации ключа введите ваше Имя";
-        return;
-    }
+        // Создаем аккаунт, жестко привязанный к этому ключу
+        const newUser = {
+            id: 'user_' + Date.now(),
+            name: name,
+            role: invite.role,
+            active: true,
+            token: code 
+        };
+        dbUsers.push(newUser);
+        
+        invite.used = true;
+        saveDB();
 
-    const invite = dbInvites.find(i => i.code === code);
-    if (!invite) {
-        errorEl.innerText = "Неверный код приглашения";
-        return;
+        localStorage.setItem('ch_token', code);
+        errorEl.innerText = "";
+        checkAuth();
     }
-    if (invite.used) {
-        errorEl.innerText = "Этот код уже активирован другим пользователем";
-        return;
-    }
-
-    // Регистрация пользователя: теперь сам ключ становится его токеном
-    const newUser = {
-        id: 'user_' + Date.now(),
-        name: name,
-        role: invite.role,
-        active: true,
-        token: code 
-    };
-    dbUsers.push(newUser);
-    
-    // Помечаем инвайт как использованный (для других)
-    invite.used = true;
-    saveDB();
-
-    localStorage.setItem('ch_token', code);
-    errorEl.innerText = "";
-    checkAuth();
 }
 
 function logout() {
@@ -452,7 +449,7 @@ function loadAdminUsers() {
 }
 
 function revokeUser(id) {
-    if(!confirm("Отозвать доступ пользователя? Он больше не сможет зайти.")) return;
+    if(!confirm("Заблокировать этот ключ? Пользователь больше не сможет зайти на сайт.")) return;
     const user = dbUsers.find(u => u.id === id);
     if (user) {
         user.active = false;
