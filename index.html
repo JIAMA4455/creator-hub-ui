@@ -60,13 +60,13 @@
             </ul>
 
             <!-- User Panel -->
-            <div class="user-panel">
+            <div class="user-panel" onclick="goToMyProfile()" style="cursor: pointer;" title="Мой профиль">
                 <div class="avatar"></div>
                 <div class="user-info">
                     <div class="username" id="current-username">Загрузка...</div>
                     <div class="status" id="current-role">...</div>
                 </div>
-                <button class="btn-icon" onclick="logout()" title="Выйти" style="margin-left:auto;">🚪</button>
+                <button class="btn-icon" onclick="logout(event)" title="Выйти" style="margin-left:auto;">🚪</button>
             </div>
         </nav>
 
@@ -136,30 +136,25 @@
                             <div class="profile-avatar" id="cp-avatar">U</div>
                             <div class="profile-info">
                                 <h2 id="cp-name" style="margin-bottom: 5px;">Имя</h2>
-                                <div class="status" id="cp-role">Роль</div>
+                                <div class="status" id="cp-role" style="margin-bottom: 10px;">Роль</div>
+                                <div id="cp-tiktok-section">
+                                    <!-- Заполняется JS -->
+                                </div>
                             </div>
                         </div>
                         <div class="divider"></div>
-                        <h3 style="margin-top: 20px; margin-bottom: 15px; color: white;">Аналитика аккаунта (TikTok)</h3>
-                        <div class="kpi-grid" style="opacity: 0.6;">
-                            <div class="kpi-card">
-                                <div class="kpi-label">Подписчики</div>
-                                <div class="kpi-value">---</div>
-                                <div class="kpi-trend neutral">Сбор данных...</div>
-                            </div>
-                            <div class="kpi-card">
-                                <div class="kpi-label">Просмотры (7 дней)</div>
-                                <div class="kpi-value">---</div>
-                                <div class="kpi-trend neutral">Сбор данных...</div>
-                            </div>
-                            <div class="kpi-card">
-                                <div class="kpi-label">Лайки</div>
-                                <div class="kpi-value">---</div>
-                                <div class="kpi-trend neutral">Сбор данных...</div>
-                            </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 15px;">
+                            <h3 style="margin: 0; color: white;">Аналитика аккаунта (TikTok)</h3>
+                            <button class="btn-primary" id="btn-sync-tiktok" style="display:none;" onclick="syncTikTokData()">🔄 Синхронизировать</button>
                         </div>
-                        <div style="margin-top: 20px; color: var(--text-muted);">
-                            * Полная аналитика по аккаунту и тональности комментариев будет доступна после подключения TikTok API.
+                        <div class="kpi-grid" id="cp-metrics-grid">
+                            <div class="kpi-card"><div class="kpi-label">Подписчики</div><div class="kpi-value" id="tt-followers">---</div></div>
+                            <div class="kpi-card"><div class="kpi-label">Лайки (всего)</div><div class="kpi-value" id="tt-likes">---</div></div>
+                            <div class="kpi-card"><div class="kpi-label">Опубликовано видео</div><div class="kpi-value" id="tt-videos">---</div></div>
+                            <div class="kpi-card"><div class="kpi-label">Вовлеченность (ER)</div><div class="kpi-value" id="tt-er">---</div></div>
+                        </div>
+                        <div id="cp-tt-empty" style="margin-top: 20px; color: var(--text-muted);">
+                            Укажите TikTok username, чтобы загрузить метрики.
                         </div>
                     </div>
                 </div>

@@ -346,7 +346,10 @@ function renderCreatorsList() {
     });
 }
 
+let viewedUserId = null;
+
 function openCreatorProfile(userId) {
+    viewedUserId = userId;
     const user = dbUsers.find(u => u.id === userId);
     if (!user) return;
     
@@ -360,6 +363,84 @@ function openCreatorProfile(userId) {
     document.getElementById('cp-avatar').style.background = `hsl(${hue}, 60%, 50%)`;
     document.getElementById('cp-name').innerText = user.name;
     document.getElementById('cp-role').innerText = user.role;
+
+    const ttSection = document.getElementById('cp-tiktok-section');
+    const isMe = (userId === currentUser.id);
+    
+    if (isMe) {
+        ttSection.innerHTML = `
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span style="color:#b5bac1;">TikTok:</span>
+                <input type="text" id="tt-username-input" class="form-input" style="margin:0; width:150px; padding: 4px 8px;" placeholder="@username" value="${user.tiktokUsername || ''}">
+                <button class="btn-primary" style="padding: 4px 10px;" onclick="saveTikTokUsername()">Сохранить</button>
+            </div>
+        `;
+    } else {
+        ttSection.innerHTML = user.tiktokUsername 
+            ? `<div style="color:var(--text-link); cursor:pointer;" onclick="window.open('https://tiktok.com/@${user.tiktokUsername.replace('@','')}', '_blank')">📱 ${user.tiktokUsername}</div>` 
+            : `<div style="color:var(--text-muted);">TikTok не указан</div>`;
+    }
+
+    renderTikTokMetrics(user);
+}
+
+function saveTikTokUsername() {
+    const input = document.getElementById('tt-username-input').value.trim();
+    const user = dbUsers.find(u => u.id === currentUser.id);
+    if (user) {
+        let cleanUsername = input.replace(/^@/, '');
+        user.tiktokUsername = cleanUsername ? '@' + cleanUsername : '';
+        saveDB();
+        renderTikTokMetrics(user);
+        alert("TikTok аккаунт сохранен!");
+    }
+}
+
+function renderTikTokMetrics(user) {
+    const grid = document.getElementById('cp-metrics-grid');
+    const emptyMsg = document.getElementById('cp-tt-empty');
+    const syncBtn = document.getElementById('btn-sync-tiktok');
+
+    if (!user.tiktokUsername) {
+        grid.style.display = 'none';
+        syncBtn.style.display = 'none';
+        emptyMsg.style.display = 'block';
+    } else {
+        grid.style.display = 'grid';
+        emptyMsg.style.display = 'none';
+        syncBtn.style.display = 'inline-block';
+        
+        const m = user.tiktokMetrics || { followers: '---', likes: '---', videos: '---', er: '---' };
+        document.getElementById('tt-followers').innerText = m.followers;
+        document.getElementById('tt-likes').innerText = m.likes;
+        document.getElementById('tt-videos').innerText = m.videos;
+        document.getElementById('tt-er').innerText = m.er;
+    }
+}
+
+function syncTikTokData() {
+    const user = dbUsers.find(u => u.id === viewedUserId);
+    if (!user || !user.tiktokUsername) return;
+    
+    const btn = document.getElementById('btn-sync-tiktok');
+    btn.innerText = "⏳ Парсинг...";
+    btn.disabled = true;
+
+    // Имитация парсинга и сбора метрик с TikTok
+    setTimeout(() => {
+        user.tiktokMetrics = {
+            followers: (Math.floor(Math.random() * 500) + 10).toLocaleString('ru-RU') + 'k',
+            likes: (Math.floor(Math.random() * 5000) + 100).toLocaleString('ru-RU') + 'k',
+            videos: Math.floor(Math.random() * 300) + 20,
+            er: (Math.random() * 10 + 2).toFixed(1) + '%'
+        };
+        
+        saveDB();
+        renderTikTokMetrics(user);
+
+        btn.innerText = "🔄 Синхронизировать";
+        btn.disabled = false;
+    }, 1500);
 }
 
 function closeCreatorProfile() {
@@ -460,9 +541,15 @@ function loginWithInvite() {
     }
 }
 
-function logout() {
+function logout(e) {
+    if (e) e.stopPropagation();
     localStorage.removeItem('ch_token');
     location.reload();
+}
+
+function goToMyProfile() {
+    switchTab('creators', 'Команда креаторов');
+    openCreatorProfile(currentUser.id);
 }
 
 function generateInvite() {
