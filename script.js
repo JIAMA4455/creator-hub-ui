@@ -1,4 +1,7 @@
-// --- State Management & Auth (Frontend Mock) ---
+// --- Config ---
+// Замени эту ссылку на свой Vercel URL после развертывания
+const VERCEL_API_URL = 'https://твой-проект.vercel.app/api'; 
+
 let currentUser = null;
 
 let dbUsers = JSON.parse(localStorage.getItem('ch_users')) || [];
@@ -418,7 +421,7 @@ function renderTikTokMetrics(user) {
     }
 }
 
-function syncTikTokData() {
+async function syncTikTokData() {
     const user = dbUsers.find(u => u.id === viewedUserId);
     if (!user || !user.tiktokUsername) return;
     
@@ -426,21 +429,39 @@ function syncTikTokData() {
     btn.innerText = "⏳ Парсинг...";
     btn.disabled = true;
 
-    // Имитация парсинга и сбора метрик с TikTok
-    setTimeout(() => {
+    try {
+        const cleanUsername = user.tiktokUsername.replace('@', '');
+        
+        // Делаем реальный запрос на наш микросервис
+        const response = await fetch(`${VERCEL_API_URL}?username=${cleanUsername}`);
+        
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        
+        // Сохраняем реальные данные
         user.tiktokMetrics = {
-            followers: (Math.floor(Math.random() * 500) + 10).toLocaleString('ru-RU') + 'k',
-            likes: (Math.floor(Math.random() * 5000) + 100).toLocaleString('ru-RU') + 'k',
-            videos: Math.floor(Math.random() * 300) + 20,
-            er: (Math.random() * 10 + 2).toFixed(1) + '%'
+            followers: data.followers,
+            likes: data.likes,
+            videos: data.videos,
+            er: data.er
         };
+        if (data.avatar) {
+            user.tiktokAvatar = data.avatar;
+        }
         
         saveDB();
         renderTikTokMetrics(user);
-
+        
+    } catch (error) {
+        console.error("Ошибка парсинга:", error);
+        alert("Ошибка при парсинге данных. Проверьте юзернейм или попробуйте позже.");
+    } finally {
         btn.innerText = "🔄 Синхронизировать";
         btn.disabled = false;
-    }, 1500);
+    }
 }
 
 function closeCreatorProfile() {
