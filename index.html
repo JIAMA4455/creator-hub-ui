@@ -8,7 +8,18 @@
     <link href="https://fonts.googleapis.com/css2?family=gg+sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #1e1f22; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;">
+        <div style="background: #2b2d31; padding: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 350px;">
+            <h2 style="color: white; margin-bottom: 20px;">Вход в систему</h2>
+            <input type="text" id="auth-invite-code" class="form-input" placeholder="Ключ приглашения (Invite Code)" style="margin-bottom: 15px;">
+            <input type="text" id="auth-name" class="form-input" placeholder="Ваше Имя (для отображения)" style="margin-bottom: 20px;">
+            <button class="btn-primary" style="width: 100%;" onclick="loginWithInvite()">Войти</button>
+            <div id="auth-error" style="color: #ed4245; margin-top: 15px; font-size: 14px;"></div>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container" style="display: none;">
         <!-- Servers Sidebar (Super Minimal) -->
         <nav class="server-sidebar">
             <div class="server-icon active">CH</div>
@@ -43,15 +54,19 @@
                 <li class="nav-item" onclick="switchTab('reports', 'Командные отчёты')">
                     <span class="icon">📑</span> Отчёты
                 </li>
+                <li class="nav-item" id="nav-admin" onclick="switchTab('admin', 'Админ-панель')" style="display: none;">
+                    <span class="icon">🛡️</span> Админ-панель
+                </li>
             </ul>
 
             <!-- User Panel -->
             <div class="user-panel">
                 <div class="avatar"></div>
                 <div class="user-info">
-                    <div class="username" id="current-username">Daniil Titov</div>
-                    <div class="status">Продюсер</div>
+                    <div class="username" id="current-username">Загрузка...</div>
+                    <div class="status" id="current-role">...</div>
                 </div>
+                <button class="btn-icon" onclick="logout()" title="Выйти" style="margin-left:auto;">🚪</button>
             </div>
         </nav>
 
@@ -109,6 +124,27 @@
                 <div id="tab-creators" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
                 <div id="tab-analytics" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
                 <div id="tab-reports" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
+                
+                <!-- Admin Tab -->
+                <div id="tab-admin" class="tab-content">
+                    <div class="kpi-grid">
+                        <div class="kpi-card" style="grid-column: span 2;">
+                            <div class="kpi-label">Генерация ключей</div>
+                            <select id="new-invite-role" class="form-input" style="width: 200px; display: inline-block; margin-right: 10px;">
+                                <option value="Creator">Creator (Креатор)</option>
+                                <option value="Producer">Producer (Продюсер)</option>
+                                <option value="Admin">Admin (Админ)</option>
+                            </select>
+                            <button class="btn-primary" onclick="generateInvite()">Создать инвайт</button>
+                            <div id="new-invite-result" style="margin-top: 15px; font-weight: bold; color: #4ade80;"></div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px; color: white;">Активные пользователи</h3>
+                    <div id="admin-users-list" style="margin-top: 15px; background: #2b2d31; border-radius: 8px; padding: 15px;">
+                        <!-- Заполняется JS -->
+                    </div>
+                </div>
             </div>
         </main>
     </div>

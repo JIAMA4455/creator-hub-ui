@@ -1,8 +1,8 @@
-// --- State Management ---
-// Текущий пользователь (Hardcoded для прототипа)
-const currentUser = { id: 'user_1', name: 'Daniil Titov' };
+// --- State Management & Auth ---
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'http://v687951.hosted-by-vdsina.com:3000';
+let currentUser = null;
 
-// Инициализация базы данных (Local Storage)
+// Инициализация базы данных (Local Storage для идей)
 const defaultIdeas = [
     { id: 1, title: "Обзор M5 (Скрытые меню)", desc: "Показать скрытые комбинации кнопок в салоне, которые включают сервисные режимы. \n\nРеференс: BMW TikToker", author: "Daniil Titov", likedBy: ['user_2'], comments: [{id: 101, author: "Evgeniy", text: "Отличная идея, заберу на этой неделе!"}], status: "Назначена", x:0, y:0, vx:0, vy:0 },
     { id: 2, title: "Пранк с ключами (POV)", desc: "Формат от первого лица, якобы потерял ключи от авто, но заводишь с телефона.", author: "Producer", likedBy: ['user_1', 'user_3'], comments: [], status: "Новая", x:0, y:0, vx:0, vy:0 }
@@ -312,10 +312,155 @@ function initNetworkCanvas() {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
     updateKPIs();
-    document.getElementById('current-username').innerText = currentUser.name;
-    // Initial UI state setup is handled by active classes in HTML, but we need to render lists
-    if (document.getElementById('tab-ideas').classList.contains('active')) {
-        renderLinearView();
-    }
 });
+
+async function checkAuth() {
+    const token = localStorage.getItem('ch_token');
+    if (!token) {
+        document.getElementById('auth-overlay').style.display = 'flex';
+        document.getElementById('app-container').style.display = 'none';
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Invalid token");
+        
+        const data = await res.json();
+        currentUser = data.user;
+        
+        // Hide login, show app
+        document.getElementById('auth-overlay').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        
+        // Set User UI
+        document.getElementById('current-username').innerText = currentUser.name;
+        document.getElementById('current-role').innerText = currentUser.role;
+        
+        // Show admin tab if Admin
+        if (currentUser.role === 'Admin') {
+            document.getElementById('nav-admin').style.display = 'flex';
+        }
+
+        if (document.getElementById('tab-ideas').classList.contains('active')) {
+            renderLinearView();
+        }
+    } catch (e) {
+        console.error(e);
+        logout();
+    }
+}
+
+async function loginWithInvite() {
+    const code = document.getElementById('auth-invite-code').value.trim();
+    const name = document.getElementById('auth-name').value.trim();
+    const errorEl = document.getElementById('auth-error');
+    
+    if (!code || !name) {
+        errorEl.innerText = "Введите ключ и имя";
+        return;
+    }
+
+    try {
+        errorEl.innerText = "Подключение...";
+        const res = await fetch(`${API_URL}/api/auth/invite`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, name })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) {
+            errorEl.innerText = data.error || "Ошибка авторизации";
+            return;
+        }
+
+        localStorage.setItem('ch_token', data.token);
+        checkAuth();
+    } catch (e) {
+        errorEl.innerText = "Ошибка соединения с сервером";
+    }
+}
+
+function logout() {
+    localStorage.removeItem('ch_token');
+    location.reload();
+}
+
+async function generateInvite() {
+    const role = document.getElementById('new-invite-role').value;
+    const res = await fetch(`${API_URL}/api/admin/invites`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('ch_token')}`
+        },
+        body: JSON.stringify({ role })
+    });
+    const data = await res.json();
+    if(res.ok) {
+        document.getElementById('new-invite-result').innerHTML = `Готово! Ключ: <span style="user-select:all; background:#1e1f22; padding:4px 8px; border-radius:4px;">${data.code}</span> (Роль: ${data.role})`;
+        loadAdminUsers();
+    } else {
+        alert("Ошибка: " + data.error);
+    }
+}
+
+async function loadAdminUsers() {
+    const res = await fetch(`${API_URL}/api/admin/users`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('ch_token')}` }
+    });
+    if(!res.ok) return;
+    const users = await res.json();
+    
+    const list = document.getElementById('admin-users-list');
+    list.innerHTML = users.map(u => `
+        <div style="display:flex; justify-content:space-between; padding: 10px; border-bottom: 1px solid #444;">
+            <div>
+                <b style="color:white;">${u.name}</b> <span style="color:#aaa;">(Роль: ${u.role})</span>
+                ${u.is_active ? '<span style="color:#4ade80; margin-left:10px;">Активен</span>' : '<span style="color:#ed4245; margin-left:10px;">Отозван</span>'}
+            </div>
+            ${u.is_active && u.id !== currentUser.id ? `<button class="btn-primary" style="background:#ed4245;" onclick="revokeUser(${u.id})">Отозвать доступ</button>` : ''}
+        </div>
+    `).join('');
+}
+
+async function revokeUser(id) {
+    if(!confirm("Отозвать доступ пользователя? Он больше не сможет зайти.")) return;
+    await fetch(`${API_URL}/api/admin/users/${id}/revoke`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('ch_token')}` }
+    });
+    loadAdminUsers();
+}
+
+function switchTab(tabId, titleText) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    document.querySelectorAll('.tab-content').forEach(t => {
+        t.classList.remove('active');
+        t.style.display = 'none';
+    });
+
+    const targetTab = document.getElementById('tab-' + tabId);
+    if (targetTab) {
+        targetTab.classList.add('active');
+        targetTab.style.display = 'block';
+        
+        if (tabId === 'ideas') {
+            renderLinearView();
+            if (document.getElementById('ideas-network').classList.contains('active')) {
+                initNetworkCanvas();
+            }
+        }
+        if (tabId === 'admin') {
+            loadAdminUsers();
+        }
+    }
+    document.getElementById('page-title').innerText = titleText;
+}
