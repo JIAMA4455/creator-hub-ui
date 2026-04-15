@@ -532,3 +532,9 @@ function switchTab(tabId, titleText) {
     }
     document.getElementById('page-title').innerText = titleText;
 }
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+    saveDB(); // Ensure default invite exists
+    checkAuth();
+    updateKPIs();
+});
