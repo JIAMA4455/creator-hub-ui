@@ -250,8 +250,8 @@ function initNetworkCanvas() {
         ideas.forEach(idea => {
             idea.x += idea.vx;
             idea.y += idea.vy;
-            // Размер круга зависит от лайков
-            idea.radius = Math.max(15, 15 + idea.likedBy.length * 4);
+            // Делаем круги больше (базовый радиус 45)
+            idea.radius = Math.max(45, 45 + idea.likedBy.length * 5);
 
             if (idea.x - idea.radius < 0 || idea.x + idea.radius > canvas.width) idea.vx *= -1;
             if (idea.y - idea.radius < 0 || idea.y + idea.radius > canvas.height) idea.vy *= -1;
@@ -264,12 +264,13 @@ function initNetworkCanvas() {
                 const dy = ideas[i].y - ideas[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
 
-                if (dist < 250) {
+                // Увеличил дистанцию связи до 350
+                if (dist < 350) {
                     ctx.beginPath();
                     ctx.moveTo(ideas[i].x, ideas[i].y);
                     ctx.lineTo(ideas[j].x, ideas[j].y);
-                    ctx.strokeStyle = `rgba(88, 101, 242, ${1 - dist/250})`; 
-                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = `rgba(88, 101, 242, ${1 - dist/350})`; 
+                    ctx.lineWidth = 1.5;
                     ctx.stroke();
                 }
             }
@@ -279,20 +280,27 @@ function initNetworkCanvas() {
         ideas.forEach(idea => {
             ctx.beginPath();
             ctx.arc(idea.x, idea.y, idea.radius, 0, Math.PI * 2);
-            ctx.fillStyle = '#23a559';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#4ade80';
+            ctx.fillStyle = '#2b2d31'; // Тёмный фон в стиле Discord
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#5865F2'; // Discord Blurple
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(88, 101, 242, 0.4)';
             ctx.fill();
+            ctx.stroke();
             ctx.shadowBlur = 0;
 
             ctx.fillStyle = '#ffffff';
-            ctx.font = '12px Inter, sans-serif';
+            ctx.font = 'bold 12px Inter, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            let shortTitle = idea.title.length > 15 ? idea.title.substring(0,15) + '...' : idea.title;
-            ctx.fillText(shortTitle, idea.x, idea.y + idea.radius + 15);
-            ctx.fillText(`❤️ ${idea.likedBy.length}`, idea.x, idea.y);
+            let shortTitle = idea.title.length > 16 ? idea.title.substring(0,14) + '...' : idea.title;
+            // Текст внутри кружка
+            ctx.fillText(shortTitle, idea.x, idea.y - 8);
+            
+            ctx.fillStyle = '#b5bac1'; // серый цвет для лайков
+            ctx.font = '12px Inter, sans-serif';
+            ctx.fillText(`❤️ ${idea.likedBy.length}`, idea.x, idea.y + 12);
         });
 
         animationFrameId = requestAnimationFrame(draw);
