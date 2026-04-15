@@ -1,6 +1,15 @@
-// --- State Management & Auth ---
-const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'http://v687951.hosted-by-vdsina.com:3000';
+// --- State Management & Auth (Frontend Mock) ---
 let currentUser = null;
+
+let dbUsers = JSON.parse(localStorage.getItem('ch_users')) || [];
+let dbInvites = JSON.parse(localStorage.getItem('ch_invites')) || [
+    { code: 'ADMIN-SECRET-2026', role: 'Admin', used: false }
+];
+
+function saveDB() {
+    localStorage.setItem('ch_users', JSON.stringify(dbUsers));
+    localStorage.setItem('ch_invites', JSON.stringify(dbInvites));
+}
 
 // Инициализация базы данных (Local Storage для идей)
 const defaultIdeas = [
@@ -312,11 +321,12 @@ function initNetworkCanvas() {
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
+    saveDB(); // Ensure default invite exists
     checkAuth();
     updateKPIs();
 });
 
-async function checkAuth() {
+function checkAuth() {
     const token = localStorage.getItem('ch_token');
     if (!token) {
         document.getElementById('auth-overlay').style.display = 'flex';
@@ -324,38 +334,33 @@ async function checkAuth() {
         return;
     }
 
-    try {
-        const res = await fetch(`${API_URL}/api/auth/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error("Invalid token");
-        
-        const data = await res.json();
-        currentUser = data.user;
-        
-        // Hide login, show app
-        document.getElementById('auth-overlay').style.display = 'none';
-        document.getElementById('app-container').style.display = 'flex';
-        
-        // Set User UI
-        document.getElementById('current-username').innerText = currentUser.name;
-        document.getElementById('current-role').innerText = currentUser.role;
-        
-        // Show admin tab if Admin
-        if (currentUser.role === 'Admin') {
-            document.getElementById('nav-admin').style.display = 'flex';
-        }
-
-        if (document.getElementById('tab-ideas').classList.contains('active')) {
-            renderLinearView();
-        }
-    } catch (e) {
-        console.error(e);
+    const user = dbUsers.find(u => u.token === token && u.active);
+    if (!user) {
         logout();
+        return;
+    }
+
+    currentUser = user;
+    
+    // Hide login, show app
+    document.getElementById('auth-overlay').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    
+    // Set User UI
+    document.getElementById('current-username').innerText = currentUser.name;
+    document.getElementById('current-role').innerText = currentUser.role;
+    
+    // Show admin tab if Admin
+    if (currentUser.role === 'Admin') {
+        document.getElementById('nav-admin').style.display = 'flex';
+    }
+
+    if (document.getElementById('tab-ideas').classList.contains('active')) {
+        renderLinearView();
     }
 }
 
-async function loginWithInvite() {
+function loginWithInvite() {
     const code = document.getElementById('auth-invite-code').value.trim();
     const name = document.getElementById('auth-name').value.trim();
     const errorEl = document.getElementById('auth-error');
@@ -365,25 +370,34 @@ async function loginWithInvite() {
         return;
     }
 
-    try {
-        errorEl.innerText = "Подключение...";
-        const res = await fetch(`${API_URL}/api/auth/invite`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, name })
-        });
-        const data = await res.json();
-        
-        if (!res.ok) {
-            errorEl.innerText = data.error || "Ошибка авторизации";
-            return;
-        }
-
-        localStorage.setItem('ch_token', data.token);
-        checkAuth();
-    } catch (e) {
-        errorEl.innerText = "Ошибка соединения с сервером";
+    const invite = dbInvites.find(i => i.code === code);
+    if (!invite) {
+        errorEl.innerText = "Неверный код приглашения";
+        return;
     }
+    if (invite.used) {
+        errorEl.innerText = "Код уже был использован";
+        return;
+    }
+
+    // Register user
+    const token = 'tok_' + Math.random().toString(36).substr(2) + Date.now();
+    const newUser = {
+        id: 'user_' + Date.now(),
+        name: name,
+        role: invite.role,
+        active: true,
+        token: token
+    };
+    dbUsers.push(newUser);
+    
+    // Mark invite as used
+    invite.used = true;
+    saveDB();
+
+    localStorage.setItem('ch_token', token);
+    errorEl.innerText = "";
+    checkAuth();
 }
 
 function logout() {
@@ -391,51 +405,38 @@ function logout() {
     location.reload();
 }
 
-async function generateInvite() {
+function generateInvite() {
     const role = document.getElementById('new-invite-role').value;
-    const res = await fetch(`${API_URL}/api/admin/invites`, {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('ch_token')}`
-        },
-        body: JSON.stringify({ role })
-    });
-    const data = await res.json();
-    if(res.ok) {
-        document.getElementById('new-invite-result').innerHTML = `Готово! Ключ: <span style="user-select:all; background:#1e1f22; padding:4px 8px; border-radius:4px;">${data.code}</span> (Роль: ${data.role})`;
-        loadAdminUsers();
-    } else {
-        alert("Ошибка: " + data.error);
-    }
+    const code = Math.random().toString(36).substr(2, 4).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+    
+    dbInvites.push({ code, role, used: false });
+    saveDB();
+
+    document.getElementById('new-invite-result').innerHTML = `Готово! Ключ: <span style="user-select:all; background:#1e1f22; padding:4px 8px; border-radius:4px;">${code}</span> (Роль: ${role})`;
+    loadAdminUsers();
 }
 
-async function loadAdminUsers() {
-    const res = await fetch(`${API_URL}/api/admin/users`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('ch_token')}` }
-    });
-    if(!res.ok) return;
-    const users = await res.json();
-    
+function loadAdminUsers() {
     const list = document.getElementById('admin-users-list');
-    list.innerHTML = users.map(u => `
+    list.innerHTML = dbUsers.map(u => `
         <div style="display:flex; justify-content:space-between; padding: 10px; border-bottom: 1px solid #444;">
             <div>
                 <b style="color:white;">${u.name}</b> <span style="color:#aaa;">(Роль: ${u.role})</span>
-                ${u.is_active ? '<span style="color:#4ade80; margin-left:10px;">Активен</span>' : '<span style="color:#ed4245; margin-left:10px;">Отозван</span>'}
+                ${u.active ? '<span style="color:#4ade80; margin-left:10px;">Активен</span>' : '<span style="color:#ed4245; margin-left:10px;">Отозван</span>'}
             </div>
-            ${u.is_active && u.id !== currentUser.id ? `<button class="btn-primary" style="background:#ed4245;" onclick="revokeUser(${u.id})">Отозвать доступ</button>` : ''}
+            ${u.active && u.id !== currentUser.id ? `<button class="btn-primary" style="background:#ed4245;" onclick="revokeUser('${u.id}')">Отозвать доступ</button>` : ''}
         </div>
     `).join('');
 }
 
-async function revokeUser(id) {
+function revokeUser(id) {
     if(!confirm("Отозвать доступ пользователя? Он больше не сможет зайти.")) return;
-    await fetch(`${API_URL}/api/admin/users/${id}/revoke`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('ch_token')}` }
-    });
-    loadAdminUsers();
+    const user = dbUsers.find(u => u.id === id);
+    if (user) {
+        user.active = false;
+        saveDB();
+        loadAdminUsers();
+    }
 }
 
 function switchTab(tabId, titleText) {
