@@ -366,10 +366,6 @@ function closeCreatorProfile() {
     document.getElementById('creators-list-view').style.display = 'block';
     document.getElementById('creator-profile-view').style.display = 'none';
 }
-    saveDB(); // Ensure default invite exists
-    checkAuth();
-    updateKPIs();
-});
 
 function checkAuth() {
     const token = localStorage.getItem('ch_token');
