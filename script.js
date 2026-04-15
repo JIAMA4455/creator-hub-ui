@@ -365,8 +365,31 @@ function loginWithInvite() {
     const name = document.getElementById('auth-name').value.trim();
     const errorEl = document.getElementById('auth-error');
     
-    if (!code || !name) {
-        errorEl.innerText = "Введите ключ и имя";
+    if (!code) {
+        errorEl.innerText = "Введите ключ";
+        return;
+    }
+
+    // 1. Проверяем, есть ли уже пользователь с таким ключом (повторный вход)
+    let user = dbUsers.find(u => u.token === code);
+    if (user) {
+        if (!user.active) {
+            errorEl.innerText = "Доступ отозван";
+            return;
+        }
+        // Если при входе ввели имя, обновляем его
+        if (name) user.name = name;
+        saveDB();
+        
+        localStorage.setItem('ch_token', user.token);
+        errorEl.innerText = "";
+        checkAuth();
+        return;
+    }
+
+    // 2. Первая активация нового ключа
+    if (!name) {
+        errorEl.innerText = "Для первой активации ключа введите ваше Имя";
         return;
     }
 
@@ -376,26 +399,25 @@ function loginWithInvite() {
         return;
     }
     if (invite.used) {
-        errorEl.innerText = "Код уже был использован";
+        errorEl.innerText = "Этот код уже активирован другим пользователем";
         return;
     }
 
-    // Register user
-    const token = 'tok_' + Math.random().toString(36).substr(2) + Date.now();
+    // Регистрация пользователя: теперь сам ключ становится его токеном
     const newUser = {
         id: 'user_' + Date.now(),
         name: name,
         role: invite.role,
         active: true,
-        token: token
+        token: code 
     };
     dbUsers.push(newUser);
     
-    // Mark invite as used
+    // Помечаем инвайт как использованный (для других)
     invite.used = true;
     saveDB();
 
-    localStorage.setItem('ch_token', token);
+    localStorage.setItem('ch_token', code);
     errorEl.innerText = "";
     checkAuth();
 }
