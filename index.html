@@ -121,7 +121,48 @@
                     </div>
                 </div>
 
-                <div id="tab-creators" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
+                <div id="tab-creators" class="tab-content">
+                    <!-- View: List -->
+                    <div id="creators-list-view">
+                        <div class="creators-grid" id="creators-grid">
+                            <!-- Cards here -->
+                        </div>
+                    </div>
+                    
+                    <!-- View: Profile -->
+                    <div id="creator-profile-view" style="display: none;">
+                        <button class="btn-icon" onclick="closeCreatorProfile()" style="margin-bottom: 20px;">⬅ Назад к списку</button>
+                        <div class="profile-header">
+                            <div class="profile-avatar" id="cp-avatar">U</div>
+                            <div class="profile-info">
+                                <h2 id="cp-name" style="margin-bottom: 5px;">Имя</h2>
+                                <div class="status" id="cp-role">Роль</div>
+                            </div>
+                        </div>
+                        <div class="divider"></div>
+                        <h3 style="margin-top: 20px; margin-bottom: 15px; color: white;">Аналитика аккаунта (TikTok)</h3>
+                        <div class="kpi-grid" style="opacity: 0.6;">
+                            <div class="kpi-card">
+                                <div class="kpi-label">Подписчики</div>
+                                <div class="kpi-value">---</div>
+                                <div class="kpi-trend neutral">Сбор данных...</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">Просмотры (7 дней)</div>
+                                <div class="kpi-value">---</div>
+                                <div class="kpi-trend neutral">Сбор данных...</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">Лайки</div>
+                                <div class="kpi-value">---</div>
+                                <div class="kpi-trend neutral">Сбор данных...</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px; color: var(--text-muted);">
+                            * Полная аналитика по аккаунту и тональности комментариев будет доступна после подключения TikTok API.
+                        </div>
+                    </div>
+                </div>
                 <div id="tab-analytics" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
                 <div id="tab-reports" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
                 

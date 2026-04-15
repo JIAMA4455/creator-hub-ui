@@ -319,8 +319,53 @@ function initNetworkCanvas() {
     draw();
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
+// --- Creators Tab ---
+function renderCreatorsList() {
+    document.getElementById('creators-list-view').style.display = 'block';
+    document.getElementById('creator-profile-view').style.display = 'none';
+    
+    const grid = document.getElementById('creators-grid');
+    grid.innerHTML = '';
+    
+    const activeUsers = dbUsers.filter(u => u.active);
+    
+    activeUsers.forEach(u => {
+        const card = document.createElement('div');
+        card.className = 'creator-card';
+        card.onclick = () => openCreatorProfile(u.id);
+        
+        const initial = u.name ? u.name.charAt(0).toUpperCase() : 'U';
+        const hue = (u.name.length * 25 + u.name.charCodeAt(0) * 10) % 360; // Псевдослучайный цвет по имени
+        
+        card.innerHTML = `
+            <div class="avatar-large" style="background: hsl(${hue}, 60%, 50%);">${initial}</div>
+            <h3 style="margin-bottom: 5px; color: white;">${u.name}</h3>
+            <div class="status">${u.role}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function openCreatorProfile(userId) {
+    const user = dbUsers.find(u => u.id === userId);
+    if (!user) return;
+    
+    document.getElementById('creators-list-view').style.display = 'none';
+    document.getElementById('creator-profile-view').style.display = 'block';
+    
+    const initial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+    const hue = (user.name.length * 25 + user.name.charCodeAt(0) * 10) % 360;
+    
+    document.getElementById('cp-avatar').innerText = initial;
+    document.getElementById('cp-avatar').style.background = `hsl(${hue}, 60%, 50%)`;
+    document.getElementById('cp-name').innerText = user.name;
+    document.getElementById('cp-role').innerText = user.role;
+}
+
+function closeCreatorProfile() {
+    document.getElementById('creators-list-view').style.display = 'block';
+    document.getElementById('creator-profile-view').style.display = 'none';
+}
     saveDB(); // Ensure default invite exists
     checkAuth();
     updateKPIs();
@@ -477,6 +522,9 @@ function switchTab(tabId, titleText) {
             if (document.getElementById('ideas-network').classList.contains('active')) {
                 initNetworkCanvas();
             }
+        }
+        if (tabId === 'creators') {
+            renderCreatorsList();
         }
         if (tabId === 'admin') {
             loadAdminUsers();
