@@ -620,7 +620,7 @@ function switchTab(tabId, titleText) {
 // Init
 document.addEventListener('DOMContentLoaded', () => {
     saveDB(); // Ensure default invite exists
-    checkAuth();
+    // checkAuth(); // Вход отключен
     updateKPIs();
 });
 

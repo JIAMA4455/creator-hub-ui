@@ -10,15 +10,7 @@
 </head>
 <body>
     <!-- Auth Overlay -->
-    <div id="auth-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #1e1f22; display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column;">
-        <div style="background: #2b2d31; padding: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 350px;">
-            <h2 style="color: white; margin-bottom: 20px;">Вход в систему</h2>
-            <input type="text" id="auth-invite-code" class="form-input" placeholder="Ключ приглашения (Invite Code)" style="margin-bottom: 15px;">
-            <input type="text" id="auth-name" class="form-input" placeholder="Ваше Имя (для отображения)" style="margin-bottom: 20px;">
-            <button class="btn-primary" style="width: 100%;" onclick="loginWithInvite()">Войти</button>
-            <div id="auth-error" style="color: #ed4245; margin-top: 15px; font-size: 14px;"></div>
-        </div>
-    </div>
+    
 
     <div class="app-container" id="app-container" style="display: none;">
         <!-- Servers Sidebar (Super Minimal) -->
