@@ -158,7 +158,83 @@
                         </div>
                     </div>
                 </div>
-                <div id="tab-analytics" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
+                <div id="tab-analytics" class="tab-content">
+                    <!-- Accounts List -->
+                    <div id="accounts-list-view">
+                        <div style="padding: 20px;">
+                            <h2 style="color: white; margin-bottom: 20px;">📱 Управление аккаунтами TikTok</h2>
+                            
+                            <!-- Add Account Form -->
+                            <div style="background: #2b2d31; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                <h3 style="color: white; margin: 0 0 15px 0;">Добавить аккаунт</h3>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <input type="text" id="new-tt-username" class="form-input" placeholder="TikTok username" style="flex: 1; min-width: 200px;">
+                                    <select id="new-tt-owner" class="form-input" style="width: 200px;">
+                                        <option value="">Выберите владельца...</option>
+                                    </select>
+                                    <button class="btn-primary" onclick="addTikTokAccount()">➕ Добавить</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Accounts Grid -->
+                            <div id="accounts-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+                                <!-- Account cards will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Account Detail View -->
+                    <div id="accounts-detail-view" style="display: none; padding: 20px;">
+                        <button onclick="showAccountsList()" style="background: transparent; border: none; color: #25f4ee; cursor: pointer; margin-bottom: 15px;">← Назад к списку</button>
+                        
+                        <div id="account-detail-card">
+                            <!-- Profile Header -->
+                            <div style="background: #2b2d31; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                                <div style="display: flex; align-items: center; gap: 20px;">
+                                    <img id="detail-avatar" src="" style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid #fe2c55;">
+                                    <div>
+                                        <h2 id="detail-username" style="color: white; margin: 0; font-size: 28px;"></h2>
+                                        <p id="detail-nickname" style="color: #888; margin: 5px 0 0 0;"></p>
+                                        <div style="margin-top: 10px; padding: 5px 12px; background: #1e1f22; border-radius: 20px; display: inline-block;">
+                                            <span style="color: #888; font-size: 12px;">Владелец: </span>
+                                            <span id="detail-owner" style="color: #4ade80; font-weight: bold;"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Stats Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
+                                <div style="background: #2b2d31; padding: 20px; border-radius: 12px; text-align: center;">
+                                    <div id="detail-followers" style="color: #fe2c55; font-size: 32px; font-weight: bold;">---</div>
+                                    <div style="color: #888; font-size: 14px;">Подписчики</div>
+                                </div>
+                                <div style="background: #2b2d31; padding: 20px; border-radius: 12px; text-align: center;">
+                                    <div id="detail-likes" style="color: #25f4ee; font-size: 32px; font-weight: bold;">---</div>
+                                    <div style="color: #888; font-size: 14px;">Лайки</div>
+                                </div>
+                                <div style="background: #2b2d31; padding: 20px; border-radius: 12px; text-align: center;">
+                                    <div id="detail-videos" style="color: #fe2c55; font-size: 32px; font-weight: bold;">---</div>
+                                    <div style="color: #888; font-size: 14px;">Видео</div>
+                                </div>
+                                <div style="background: #2b2d31; padding: 20px; border-radius: 12px; text-align: center;">
+                                    <div id="detail-er" style="color: #25f4ee; font-size: 32px; font-weight: bold;">---%</div>
+                                    <div style="color: #888; font-size: 14px;">Вовлеченность</div>
+                                </div>
+                            </div>
+                            
+                            <!-- TikTok Embed -->
+                            <div style="background: #2b2d31; padding: 20px; border-radius: 12px;">
+                                <h4 style="color: white; margin: 0 0 15px 0;">Профиль</h4>
+                                <div id="detail-embed"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="account-error" style="display: none; background: #3d1f1f; padding: 20px; border-radius: 12px; color: #ff6b6b; text-align: center;">
+                            Ошибка загрузки аккаунта
+                        </div>
+                    </div>
+                </div><div style="background:#2b2d31;padding:20px;border-radius:8px;margin-bottom:20px;"><input type="text" id="tiktok-user" placeholder="Username (e.g. khaby.lame)" style="padding:10px;border-radius:8px;border:1px solid #444;background:#1e1f22;color:white;width:300px;margin-right:10px;"><button onclick="loadTT()" style="padding:10px 20px;background:#fe2c55;color:white;border:none;border-radius:8px;cursor:pointer;">Search</button></div><div id="tt-card" style="display:none;background:#2b2d31;padding:20px;border-radius:12px;margin-top:20px;"><img id="tt-img" style="width:80px;height:80px;border-radius:50%;border:3px solid #fe2c55;"><h3 id="tt-name" style="color:white;margin:10px 0;"></h3><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:15px;"><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-followers" style="color:#fe2c55;font-size:24px;font-weight:bold;">0</div><div style="color:#888;font-size:12px;">Followers</div></div><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-likes" style="color:#25f4ee;font-size:24px;font-weight:bold;">0</div><div style="color:#888;font-size:12px;">Likes</div></div><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-videos" style="color:#fe2c55;font-size:24px;font-weight:bold;">0</div><div style="color:#888;font-size:12px;">Videos</div></div><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-er" style="color:#25f4ee;font-size:24px;font-weight:bold;">0%</div><div style="color:#888;font-size:12px;">ER</div></div></div><div id="tt-embed" style="margin-top:20px;"></div></div><div id="tt-empty" style="text-align:center;padding:40px;color:#888;"><p style="font-size:48px;margin:0;">📱</p><p>Enter TikTok username</p></div></div></div>
                 <div id="tab-reports" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
                 
                 <!-- Admin Tab -->

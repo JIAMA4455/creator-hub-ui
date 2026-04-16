@@ -642,3 +642,170 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     updateKPIs();
 });
+
+
+// TikTok Profile Loader
+function loadTikTokProfile() {
+    const username = document.getElementById('tiktok-user').value.trim();
+    if (!username) {
+        alert('Please enter a username');
+        return;
+    }
+    
+    const card = document.getElementById('tt-card');
+    const empty = document.getElementById('tt-empty');
+    
+    card.style.display = 'block';
+    empty.style.display = 'none';
+    
+    // Clean username
+    const cleanUsername = username.replace('@', '');
+    
+    // For demo - show the username
+    document.getElementById('tt-name').textContent = '@' + cleanUsername;
+    document.getElementById('tt-avatar').src = 'https://p16-sign-va.tiktokcdn.com/tiktok-obj/' + cleanUsername + '?quality=95&Ratio=1&=webp';
+    document.getElementById('tt-embed').innerHTML = '<blockquote class="tiktok-embed" cite="@' + cleanUsername + '" data-unique-id="' + cleanUsername + '"><section><a target="_blank" href="https://www.tiktok.com/@' + cleanUsername + '"></a></section></blockquote><script async src="https://www.tiktok.com/embed.js"></script>';
+    
+    // Demo data (replace with real API later)
+    document.getElementById('tt-followers').textContent = 'Loading...';
+    document.getElementById('tt-likes').textContent = 'Loading...';
+    document.getElementById('tt-videos').textContent = 'Loading...';
+    document.getElementById('tt-er').textContent = '---';
+}
+
+// ==================== TIKTOK ACCOUNTS ====================
+let tiktokAccounts = JSON.parse(localStorage.getItem('tiktokAccounts') || '[]');
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+// Initialize accounts on page load
+document.addEventListener('DOMContentLoaded', function() {
+    renderAccountsList();
+    populateOwnerSelect();
+});
+
+function populateOwnerSelect() {
+    // Get users from localStorage or use default
+    const users = JSON.parse(localStorage.getItem('users') || '[{"name":"Даниил"},{"name":"Команда"}]');
+    const select = document.getElementById('new-tt-owner');
+    if (select) {
+        select.innerHTML = '<option value="">Выберите владельца...</option>';
+        users.forEach(u => {
+            select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+        });
+    }
+}
+
+function renderAccountsList() {
+    const grid = document.getElementById('accounts-grid');
+    if (!grid) return;
+    
+    if (tiktokAccounts.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;"><p style="font-size: 48px; margin: 0;">📱</p><p>Нет аккаунтов. Добавьте первый!</p></div>';
+        return;
+    }
+    
+    grid.innerHTML = tiktokAccounts.map((acc, idx) => `
+        <div onclick="showAccountDetail(${idx})" style="background: #2b2d31; padding: 20px; border-radius: 12px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #fe2c55, #25f4ee); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 20px;">
+                    @${acc.username.slice(0,2)}
+                </div>
+                <div>
+                    <div style="color: white; font-weight: bold; font-size: 18px;">@${acc.username}</div>
+                    <div style="color: #4ade80; font-size: 12px;">👤 ${acc.owner || 'Не назначен'}</div>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding-top: 15px; border-top: 1px solid #1e1f22;">
+                <span style="color: #888; font-size: 12px;">Добавлен</span>
+                <span style="color: #666; font-size: 12px;">${acc.addedAt || 'Недавно'}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function addTikTokAccount() {
+    const username = document.getElementById('new-tt-username').value.trim().replace('@', '');
+    const owner = document.getElementById('new-tt-owner').value;
+    
+    if (!username) {
+        alert('Введите username!');
+        return;
+    }
+    
+    if (!owner) {
+        alert('Выберите владельца!');
+        return;
+    }
+    
+    // Check if already exists
+    if (tiktokAccounts.find(a => a.username.toLowerCase() === username.toLowerCase())) {
+        alert('Аккаунт уже добавлен!');
+        return;
+    }
+    
+    tiktokAccounts.push({
+        username: username,
+        owner: owner,
+        addedAt: new Date().toLocaleDateString('ru-RU')
+    });
+    
+    localStorage.setItem('tiktokAccounts', JSON.stringify(tiktokAccounts));
+    
+    // Clear inputs
+    document.getElementById('new-tt-username').value = '';
+    document.getElementById('new-tt-owner').value = '';
+    
+    renderAccountsList();
+    alert('Аккаунт добавлен! Кликните по нему для просмотра аналитики.');
+}
+
+function showAccountsList() {
+    document.getElementById('accounts-list-view').style.display = 'block';
+    document.getElementById('accounts-detail-view').style.display = 'none';
+}
+
+function showAccountDetail(idx) {
+    const acc = tiktokAccounts[idx];
+    if (!acc) return;
+    
+    document.getElementById('accounts-list-view').style.display = 'none';
+    document.getElementById('accounts-detail-view').style.display = 'block';
+    
+    // Set account info
+    document.getElementById('detail-username').textContent = '@' + acc.username;
+    document.getElementById('detail-owner').textContent = acc.owner;
+    document.getElementById('detail-nickname').textContent = acc.username + ' - TikTok';
+    document.getElementById('detail-avatar').src = `https://p16-sign-va.tiktokcdn.com/tiktok-obj/${acc.username}?quality=95`;
+    
+    // Set embed
+    document.getElementById('detail-embed').innerHTML = `<blockquote class="tiktok-embed" cite="@${acc.username}" data-unique-id="${acc.username}"><section><a target="_blank" href="https://www.tiktok.com/@${acc.username}"></a></section></blockquote><script async src="https://www.tiktok.com/embed.js"></script>`;
+    
+    // Demo metrics (in real app, fetch from API)
+    document.getElementById('detail-followers').textContent = 'Загрузка...';
+    document.getElementById('detail-likes').textContent = 'Загрузка...';
+    document.getElementById('detail-videos').textContent = '...';
+    document.getElementById('detail-er').textContent = '...';
+    
+    // Show card, hide error
+    document.getElementById('account-detail-card').style.display = 'block';
+    document.getElementById('account-error').style.display = 'none';
+}
+
+// Keep existing loadTikTokProfile function for compatibility
+function loadTikTokProfile() {
+    const username = document.getElementById('tiktok-user')?.value.trim();
+    if (username) {
+        // Add to accounts if not exists
+        if (!tiktokAccounts.find(a => a.username.toLowerCase() === username.toLowerCase())) {
+            tiktokAccounts.push({
+                username: username.replace('@',''),
+                owner: currentUser.name || 'Команда',
+                addedAt: new Date().toLocaleDateString('ru-RU')
+            });
+            localStorage.setItem('tiktokAccounts', JSON.stringify(tiktokAccounts));
+        }
+        // Show detail
+        const idx = tiktokAccounts.findIndex(a => a.username.toLowerCase() === username.replace('@','').toLowerCase());
+        if (idx >= 0) showAccountDetail(idx);
+    }
+}
