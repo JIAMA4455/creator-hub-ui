@@ -1,10 +1,16 @@
 // --- Config ---
 // Замени эту ссылку на свой Vercel URL после развертывания
-const VERCEL_API_URL = 'https://твой-проект.vercel.app/api'; 
+const VERCEL_API_URL = 'https://creator-hub-backend.vercel.app/api'; 
 
 let currentUser = null;
 
 let dbUsers = JSON.parse(localStorage.getItem('ch_users')) || [];
+// Initialize with default admin invite if not exists
+if (!localStorage.getItem('ch_invites')) {
+    localStorage.setItem('ch_invites', JSON.stringify([
+        {code: 'ADMIN-SECRET-2026', role: 'Admin', used: false}
+    ]));
+}
 let dbInvites = JSON.parse(localStorage.getItem('ch_invites')) || [
     { code: 'ADMIN-SECRET-2026', role: 'Admin', used: false }
 ];
