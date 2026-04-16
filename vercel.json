@@ -8,6 +8,27 @@
   ],
   "routes": [
     {
+      "src": "/script.js",
+      "dest": "/public/script.js",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
+      "src": "/styles.css",
+      "dest": "/public/styles.css",
+      "headers": {
+        "Content-Type": "text/css"
+      }
+    },
+    {
+      "src": "/test-login.js",
+      "dest": "/public/test-login.js",
+      "headers": {
+        "Content-Type": "application/javascript"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
