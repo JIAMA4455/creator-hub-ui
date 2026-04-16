@@ -517,6 +517,21 @@ function checkAuth() {
 }
 
 function loginWithInvite() {
+    // Debug: show we're running
+    alert('Кнопка работает! Проверка функции...');
+    console.log('Функция loginWithInvite запущена');
+
+    console.log('[DEBUG] loginWithInvite called');
+    console.log('dbInvites:', dbInvites);
+    console.log('dbUsers:', dbUsers);
+    // Quick test to see if function runs
+    if (typeof dbInvites === 'undefined') {
+        console.error('dbInvites is undefined');
+        alert('Ошибка: dbInvites не определен. Нужно очистить кэш браузера!');
+        return;
+    }
+
+
     const code = document.getElementById('auth-invite-code').value.trim();
     const name = document.getElementById('auth-name').value.trim();
     const errorEl = document.getElementById('auth-error');
