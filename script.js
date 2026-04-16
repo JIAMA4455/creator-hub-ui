@@ -5,6 +5,13 @@ const VERCEL_API_URL = 'https://creator-hub-backend.vercel.app/api';
 let currentUser = null;
 
 let dbUsers = JSON.parse(localStorage.getItem('ch_users')) || [];
+// Initialize with default users if not exists
+if (!localStorage.getItem('ch_users')) {
+    localStorage.setItem('ch_users', JSON.stringify([
+        {id: 'user_admin', name: 'Даниил', role: 'Admin', active: true, token: 'ADMIN-SECRET-2026'}
+    ]));
+}
+
 // Initialize with default admin invite if not exists
 if (!localStorage.getItem('ch_invites')) {
     localStorage.setItem('ch_invites', JSON.stringify([
