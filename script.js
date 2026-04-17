@@ -656,7 +656,7 @@ function loadTikTokProfile() {
 
 // ==================== TIKTOK ACCOUNTS ====================
 let tiktokAccounts = JSON.parse(localStorage.getItem('tiktokAccounts') || '[]');
-let currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+// currentUser already declared at top of file
 
 // Initialize accounts on page load
 document.addEventListener('DOMContentLoaded', function() {
