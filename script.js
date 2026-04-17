@@ -1078,3 +1078,74 @@ window.assignIdea = function(ideaId, assigneeName) {
         renderIdeas();
     }
 };
+
+// --- PROFILE MODAL LOGIC ---
+(function() {
+  function initProfileModal() {
+    const modal = document.getElementById('profile-modal');
+    if (!modal) return;
+    const closeBtn = modal.querySelector('.close-btn');
+    const saveBtn = document.getElementById('save-profile');
+    const nameInput = document.getElementById('profile-name');
+    const roleSelect = document.getElementById('profile-role');
+    const tiktokInput = document.getElementById('profile-tiktok');
+    const usernamePanel = document.getElementById('current-username');
+
+    function showModal() {
+      modal.style.display = 'flex';
+      const saved = localStorage.getItem('ch_profile');
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          nameInput.value = p.name || '';
+          roleSelect.value = p.role || '';
+          tiktokInput.value = p.tiktok || '';
+        } catch(e) {}
+      }
+    }
+
+    function hideModal() { modal.style.display = 'none'; }
+
+    function saveProfile() {
+      const name = nameInput.value.trim();
+      const role = roleSelect.value;
+      let tiktok = tiktokInput.value.trim();
+
+      if (!name) { alert('Введите имя'); return; }
+      if (!role) { alert('Выберите роль'); return; }
+      if (tiktok && !tiktok.startsWith('@')) tiktok = '@' + tiktok;
+
+      localStorage.setItem('ch_profile', JSON.stringify({ name, role, tiktok }));
+      if (usernamePanel) usernamePanel.textContent = name;
+
+      // Автоматически добавить TikTok в аналитику аккаунтов
+      if (tiktok) {
+        const username = tiktok.replace('@', '');
+        const accounts = JSON.parse(localStorage.getItem('tiktokAccounts') || '[]');
+        if (!accounts.find(a => a.username.toLowerCase() === username.toLowerCase())) {
+          accounts.push({ username, owner: name, followers: 'loading...', likes: '...', er: '...', addedAt: new Date().toLocaleDateString('ru-RU') });
+          localStorage.setItem('tiktokAccounts', JSON.stringify(accounts));
+          if (typeof tiktokAccounts !== 'undefined') tiktokAccounts.push({ username, owner: name, followers: 'loading...', likes: '...', er: '...' });
+        }
+      }
+      hideModal();
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', hideModal);
+    modal.addEventListener('click', e => { if (e.target === modal) hideModal(); });
+    if (saveBtn) saveBtn.addEventListener('click', saveProfile);
+    if (usernamePanel) { usernamePanel.addEventListener('click', showModal); usernamePanel.style.cursor = 'pointer'; }
+
+    if (!localStorage.getItem('ch_profile')) {
+      showModal();
+    } else {
+      try {
+        const p = JSON.parse(localStorage.getItem('ch_profile'));
+        if (usernamePanel && p.name) usernamePanel.textContent = p.name;
+      } catch(e) {}
+    }
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initProfileModal);
+  else initProfileModal();
+})();
