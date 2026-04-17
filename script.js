@@ -44,29 +44,6 @@ function saveIdeas() {
     updateKPIs();
 }
 
-// --- Navigation ---
-function switchTab(tabId, titleText) {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-
-    document.querySelectorAll('.tab-content').forEach(t => {
-        t.classList.remove('active');
-        t.style.display = 'none';
-    });
-
-    const targetTab = document.getElementById('tab-' + tabId);
-    if (targetTab) {
-        targetTab.classList.add('active');
-        targetTab.style.display = 'block';
-        if (tabId === 'ideas') {
-            renderLinearView();
-            if (document.getElementById('ideas-network').classList.contains('active')) {
-                initNetworkCanvas();
-            }
-        }
-    }
-    document.getElementById('page-title').innerText = titleText;
-}
 
 function switchIdeaView(viewType) {
     document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
@@ -616,6 +593,12 @@ function switchTab(tabId, titleText) {
         }
     }
     document.getElementById('page-title').innerText = titleText;
+    
+    // Render data for new tabs
+    if (tabId === 'comments') renderCommentsTable();
+    if (tabId === 'reports') renderReportsTable();
+    if (tabId === 'ideas') renderIdeas();
+    if (tabId === 'creators') renderCreatorsList();
 }
 // Init
 document.addEventListener('DOMContentLoaded', () => {
@@ -861,11 +844,6 @@ function renderReportsTable() {
     `).join('');
 }
 
-// Ensure these render when their tabs are opened
-const originalSwitchTab = switchTab;
-window.switchTab = function(tabId, title) {
-    originalSwitchTab(tabId, title);
-    if (tabId === 'comments') renderCommentsTable();
 // --- MOCK DATA FOR NEW TABS ---
 let mockComments = [
     { video: "Интервью с Илоном Маском", text: "Опять скам какой-то рекламируете", sentiment: "scam", sentimentLabel: "🚨 Скам" },
@@ -990,20 +968,6 @@ function exportToPDF() {
     alert('Функция выгрузки PDF в разработке. В реальном приложении здесь будет использоваться библиотека типа jsPDF.');
     console.log('Экспорт данных в PDF:', mockReports);
 }
-
-// ==================== INTEGRATION WITH EXISTING SWITCHTAB ====================
-// Модифицируем существующую функцию switchTab для вызова рендера при переключении
-(function() {
-    const originalSwitchTab = window.switchTab;
-    window.switchTab = function(tabId, titleText) {
-        originalSwitchTab(tabId, titleText);
-        if (tabId === 'comments') {
-            renderCommentsTable();
-        } else if (tabId === 'reports') {
-            renderReportsTable();
-        }
-    };
-})();
 
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
