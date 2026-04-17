@@ -810,3 +810,67 @@ function loadTikTokProfile() {
         if (idx >= 0) showAccountDetail(idx);
     }
 }
+
+
+// --- MOCK DATA FOR NEW TABS ---
+const mockComments = [
+    { video: "Интервью с Илоном Маском", text: "Опять скам какой-то рекламируете", sentiment: "negative", sentimentLabel: "🚨 Скам/Негатив" },
+    { video: "Обзор новой нейросети", text: "Очень крутой формат, жду продолжения!", sentiment: "positive", sentimentLabel: "💚 Позитив" },
+    { video: "Как заработать в 2026", text: "А где ссылка на курс?", sentiment: "neutral", sentimentLabel: "⚪ Нейтрально" },
+    { video: "Топ 5 ошибок новичков", text: "Видео сгенерировано ИИ, отписка", sentiment: "negative", sentimentLabel: "🚨 AI/Негатив" }
+];
+
+const mockReports = [
+    { creator: "Даниил Титов", videos: 5, views: "1.2M" },
+    { creator: "Алексей Смирнов", videos: 3, views: "450K" },
+    { creator: "Иван Иванов", videos: 8, views: "2.1M" }
+];
+
+function renderCommentsTable() {
+    const tbody = document.getElementById('comments-table-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = mockComments.map(c => `
+        <tr style="border-bottom: 1px solid #1e1f22; transition: background 0.2s;" onmouseover="this.style.background='#36393f'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 15px; border-right: 1px solid #1e1f22;">${c.video}</td>
+            <td style="padding: 15px; border-right: 1px solid #1e1f22;">${c.text}</td>
+            <td style="padding: 15px;">
+                <span style="padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; background: ${c.sentiment === 'positive' ? 'rgba(74, 222, 128, 0.2)' : c.sentiment === 'negative' ? 'rgba(237, 66, 69, 0.2)' : 'rgba(181, 186, 193, 0.2)'}; color: ${c.sentiment === 'positive' ? '#4ade80' : c.sentiment === 'negative' ? '#ed4245' : '#b5bac1'};">
+                    ${c.sentimentLabel}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderReportsTable() {
+    const tbody = document.getElementById('reports-table-body');
+    if (!tbody) return;
+    
+    tbody.innerHTML = mockReports.map(r => `
+        <tr style="border-bottom: 1px solid #1e1f22; transition: background 0.2s;" onmouseover="this.style.background='#36393f'" onmouseout="this.style.background='transparent'">
+            <td style="padding: 15px; font-weight: bold;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 30px; height: 30px; background: #5865F2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">${r.creator.slice(0,2)}</div>
+                    ${r.creator}
+                </div>
+            </td>
+            <td style="padding: 15px; text-align: center; color: #4ade80;">${r.videos}</td>
+            <td style="padding: 15px; text-align: right; font-family: monospace; font-size: 16px;">${r.views}</td>
+        </tr>
+    `).join('');
+}
+
+// Ensure these render when their tabs are opened
+const originalSwitchTab = switchTab;
+window.switchTab = function(tabId, title) {
+    originalSwitchTab(tabId, title);
+    if (tabId === 'comments') renderCommentsTable();
+    if (tabId === 'reports') renderReportsTable();
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    // initial render if they happen to be default
+    renderCommentsTable();
+    renderReportsTable();
+});

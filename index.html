@@ -35,10 +35,13 @@
                 </li>
             </ul>
 
-            <div class="channel-group">АНАЛИТИКА</div>
+            <div class="channel-group">АНАЛИТИКА И ОТЧЕТЫ</div>
             <ul class="nav-links">
                 <li class="nav-item" onclick="switchTab('analytics', 'Аналитика аккаунтов')">
                     <span class="icon">📈</span> Аккаунты
+                </li>
+                <li class="nav-item" onclick="switchTab('comments', 'Анализ комментариев')">
+                    <span class="icon">💬</span> Комментарии
                 </li>
                 <li class="nav-item" onclick="switchTab('reports', 'Командные отчёты')">
                     <span class="icon">📑</span> Отчёты
@@ -147,7 +150,55 @@
                         </div>
                     </div>
                 </div>
-                <div id="tab-analytics" class="tab-content">
+                
+                <!-- Tab: Comments (NEW) -->
+                <div id="tab-comments" class="tab-content">
+                    <div style="padding: 20px;">
+                        <h2 style="color: white; margin-bottom: 20px;">💬 Анализ комментариев</h2>
+                        
+                        <div style="background: #2b2d31; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse; color: white;">
+                                <thead>
+                                    <tr style="background: #1e1f22; border-bottom: 1px solid #3f4147;">
+                                        <th style="padding: 15px; text-align: left; width: 25%;">Ролик</th>
+                                        <th style="padding: 15px; text-align: left; width: 50%;">Текст комментария</th>
+                                        <th style="padding: 15px; text-align: left; width: 25%;">Тональность</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comments-table-body">
+                                    <!-- Comments will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Reports (NEW) -->
+                <div id="tab-reports" class="tab-content">
+                    <div style="padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="color: white; margin: 0;">📑 Командные отчёты</h2>
+                            <button class="btn-primary" onclick="alert('Генерация PDF сводки...')" style="background: #5865F2;">📥 Выгрузить PDF сводку</button>
+                        </div>
+                        
+                        <div style="background: #2b2d31; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+                            <h3 style="color: white; padding: 15px 20px; margin: 0; border-bottom: 1px solid #1e1f22;">📊 Успеваемость креаторов (За неделю)</h3>
+                            <table style="width: 100%; border-collapse: collapse; color: white;">
+                                <thead>
+                                    <tr style="background: #1e1f22; border-bottom: 1px solid #3f4147;">
+                                        <th style="padding: 15px; text-align: left;">Креатор</th>
+                                        <th style="padding: 15px; text-align: center;">Выпущено роликов</th>
+                                        <th style="padding: 15px; text-align: right;">Суммарные просмотры</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body">
+                                    <!-- Reports will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+<div id="tab-analytics" class="tab-content">
                     <!-- Accounts List -->
                     <div id="accounts-list-view">
                         <div style="padding: 20px;">
