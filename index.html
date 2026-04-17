@@ -151,53 +151,9 @@
                     </div>
                 </div>
                 
-                <!-- Tab: Comments (NEW) -->
-                <div id="tab-comments" class="tab-content">
-                    <div style="padding: 20px;">
-                        <h2 style="color: white; margin-bottom: 20px;">💬 Анализ комментариев</h2>
-                        
-                        <div style="background: #2b2d31; border-radius: 8px; overflow: hidden;">
-                            <table style="width: 100%; border-collapse: collapse; color: white;">
-                                <thead>
-                                    <tr style="background: #1e1f22; border-bottom: 1px solid #3f4147;">
-                                        <th style="padding: 15px; text-align: left; width: 25%;">Ролик</th>
-                                        <th style="padding: 15px; text-align: left; width: 50%;">Текст комментария</th>
-                                        <th style="padding: 15px; text-align: left; width: 25%;">Тональность</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="comments-table-body">
-                                    <!-- Comments will be rendered here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Tab: Reports (NEW) -->
-                <div id="tab-reports" class="tab-content">
-                    <div style="padding: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <h2 style="color: white; margin: 0;">📑 Командные отчёты</h2>
-                            <button class="btn-primary" onclick="alert('Генерация PDF сводки...')" style="background: #5865F2;">📥 Выгрузить PDF сводку</button>
-                        </div>
-                        
-                        <div style="background: #2b2d31; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
-                            <h3 style="color: white; padding: 15px 20px; margin: 0; border-bottom: 1px solid #1e1f22;">📊 Успеваемость креаторов (За неделю)</h3>
-                            <table style="width: 100%; border-collapse: collapse; color: white;">
-                                <thead>
-                                    <tr style="background: #1e1f22; border-bottom: 1px solid #3f4147;">
-                                        <th style="padding: 15px; text-align: left;">Креатор</th>
-                                        <th style="padding: 15px; text-align: center;">Выпущено роликов</th>
-                                        <th style="padding: 15px; text-align: right;">Суммарные просмотры</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reports-table-body">
-                                    <!-- Reports will be rendered here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+
 <div id="tab-analytics" class="tab-content">
                     <!-- Accounts List -->
                     <div id="accounts-list-view">
@@ -275,7 +231,92 @@
                         </div>
                     </div>
                 </div><div style="background:#2b2d31;padding:20px;border-radius:8px;margin-bottom:20px;"><input type="text" id="tiktok-user" placeholder="Username (e.g. khaby.lame)" style="padding:10px;border-radius:8px;border:1px solid #444;background:#1e1f22;color:white;width:300px;margin-right:10px;"><button onclick="loadTT()" style="padding:10px 20px;background:#fe2c55;color:white;border:none;border-radius:8px;cursor:pointer;">Search</button></div><div id="tt-card" style="display:none;background:#2b2d31;padding:20px;border-radius:12px;margin-top:20px;"><img id="tt-img" style="width:80px;height:80px;border-radius:50%;border:3px solid #fe2c55;"><h3 id="tt-name" style="color:white;margin:10px 0;"></h3><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:15px;"><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-followers" style="color:#fe2c55;font-size:24px;font-weight:bold;">0</div><div style="color:#888;font-size:12px;">Followers</div></div><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-likes" style="color:#25f4ee;font-size:24px;font-weight:bold;">0</div><div style="color:#888;font-size:12px;">Likes</div></div><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-videos" style="color:#fe2c55;font-size:24px;font-weight:bold;">0</div><div style="color:#888;font-size:12px;">Videos</div></div><div style="background:#1e1f22;padding:15px;border-radius:8px;text-align:center;"><div id="tt-er" style="color:#25f4ee;font-size:24px;font-weight:bold;">0%</div><div style="color:#888;font-size:12px;">ER</div></div></div><div id="tt-embed" style="margin-top:20px;"></div></div><div id="tt-empty" style="text-align:center;padding:40px;color:#888;"><p style="font-size:48px;margin:0;">📱</p><p>Enter TikTok username</p></div></div></div>
-                <div id="tab-reports" class="tab-content"><h2 class="placeholder-text">В разработке</h2></div>
+                <!-- Comments Tab -->
+                <div id="tab-comments" class="tab-content">
+                    <div style="margin-bottom: 24px;">
+                        <h2 style="color: white; margin-bottom: 16px;">Анализ комментариев</h2>
+                        <p style="color: var(--text-muted);">Мониторинг тональности комментариев к опубликованным роликам</p>
+                    </div>
+                    <div style="background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden;">
+                        <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-floating);">
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn-primary" onclick="loadMockComments()">🔄 Обновить</button>
+                                <select class="form-input" style="width: 200px; margin: 0;" onchange="filterComments(this.value)">
+                                    <option value="all">Все тональности</option>
+                                    <option value="positive">Позитив</option>
+                                    <option value="negative">Негатив</option>
+                                    <option value="scam">Скам</option>
+                                </select>
+                            </div>
+                            <input type="text" class="search-box" style="width: 300px;" placeholder="Поиск по тексту комментария..." oninput="searchComments(this.value)">
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="comments-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: var(--bg-tertiary);">
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Ролик</th>
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Текст комментария</th>
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Тональность</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comments-table-body">
+                                    <!-- Комментарии загружаются через JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 13px;">
+                            Показано <span id="comments-count">0</span> комментариев
+                        </div>
+                    </div>
+                </div>
+                <!-- Reports Tab -->
+                <div id="tab-reports" class="tab-content">
+                    <div style="margin-bottom: 24px;">
+                        <h2 style="color: white; margin-bottom: 16px;">Отчеты по успеваемости креаторов</h2>
+                        <p style="color: var(--text-muted);">Сводка по выпущенным роликам и просмотрам за последний месяц</p>
+                    </div>
+                    <div style="background-color: var(--bg-secondary); border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+                        <div style="padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--bg-floating);">
+                            <div style="display: flex; gap: 12px;">
+                                <button class="btn-primary" onclick="loadMockReports()">🔄 Обновить данные</button>
+                                <button class="btn-primary" style="background-color: var(--green);" onclick="exportToPDF()">📄 Выгрузить PDF сводку</button>
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 14px;">Данные обновлены: <span id="reports-updated">сегодня</span></div>
+                        </div>
+                        <div style="overflow-x: auto;">
+                            <table class="reports-table" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: var(--bg-tertiary);">
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Имя креатора</th>
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Выпущено роликов</th>
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Суммарные просмотры</th>
+                                        <th style="padding: 12px 16px; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 13px;">Средняя вовлеченность</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reports-table-body">
+                                    <!-- Данные загружаются через JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                        <div style="background-color: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+                            <h3 style="color: white; margin-bottom: 8px; font-size: 16px;">📈 Топ креатор</h3>
+                            <p style="color: var(--text-muted); font-size: 14px;">Максимальное количество роликов</p>
+                            <div style="margin-top: 12px; color: var(--green); font-size: 24px; font-weight: bold;" id="top-creator-name">—</div>
+                        </div>
+                        <div style="background-color: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+                            <h3 style="color: white; margin-bottom: 8px; font-size: 16px;">🔥 Самый просматриваемый</h3>
+                            <p style="color: var(--text-muted); font-size: 14px;">Максимум суммарных просмотров</p>
+                            <div style="margin-top: 12px; color: var(--blurple); font-size: 24px; font-weight: bold;" id="top-views-name">—</div>
+                        </div>
+                        <div style="background-color: var(--bg-secondary); padding: 20px; border-radius: 8px;">
+                            <h3 style="color: white; margin-bottom: 8px; font-size: 16px;">📊 Всего роликов</h3>
+                            <p style="color: var(--text-muted); font-size: 14px;">За текущий месяц</p>
+                            <div style="margin-top: 12px; color: white; font-size: 24px; font-weight: bold;" id="total-videos">0</div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Admin Tab -->
                 <div id="tab-admin" class="tab-content">
