@@ -1023,19 +1023,58 @@ let dbIdeas = [
 ];
 
 function renderIdeas(viewMode = 'linear') {
-    const container = document.getElementById('ideas-container');
-    if (!container) return;
+    const container = document.getElementById('ideas-linear');
+    if (!container) {
+        // Если контейнера нет, попробуем найти куда вставить или создадим
+        const tab = document.getElementById('tab-ideas');
+        if (tab) {
+            let cont = tab.querySelector('#ideas-container');
+            if (!cont) {
+                cont = document.createElement('div');
+                cont.id = 'ideas-container';
+                cont.style.padding = '20px';
+                tab.appendChild(cont);
+            }
+        }
+    }
+    const actualContainer = document.getElementById('ideas-linear');
+    if (!actualContainer) return;
     
-    container.innerHTML = dbIdeas.map(idea => `
-        <div style="background: #2b2d31; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid ${idea.status === 'В работе' ? '#f5c043' : '#4ade80'}">
-            <div style="display: flex; justify-content: space-between;">
-                <h3 style="color: white; margin: 0 0 10px 0;">${idea.title}</h3>
-                <span style="font-size: 12px; padding: 2px 8px; border-radius: 4px; background: #1e1f22; color: #b5bac1;">${idea.tag}</span>
+    // Генерируем options для селекта из dbUsers
+    const userOptions = dbUsers.filter(u => u.active).map(u => 
+        `<option value="${u.name}">` + u.name + `</option>`
+    ).join('');
+
+    actualContainer.innerHTML = dbIdeas.map(idea => `
+        <div style="background: #2b2d31; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid ${idea.status === 'В работе' ? '#f5c043' : '#4ade80'}">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <h3 style="color: white; margin: 0; font-size: 18px;">${idea.title}</h3>
+                <span style="font-size: 12px; padding: 4px 8px; border-radius: 4px; background: #1e1f22; color: #b5bac1;">${idea.tag}</span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
-                <span style="color: #888;">Автор: ${idea.author}</span>
-                <span style="color: ${idea.status === 'В работе' ? '#f5c043' : '#4ade80'};">${idea.status}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-top: 1px solid #1e1f22; padding-top: 15px;">
+                <div style="color: #888; display: flex; gap: 15px; align-items: center;">
+                    <span>Автор: ${idea.author}</span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span>Исполнитель:</span>
+                        <select onchange="assignIdea(${idea.id}, this.value)" style="background: #1e1f22; color: white; border: 1px solid #3f4147; padding: 4px 8px; border-radius: 4px; outline: none; cursor: pointer;">
+                            <option value="">Не назначен</option>
+                            ${dbUsers.filter(u => u.active).map(u => `<option value="${u.name}" ${idea.assignee === u.name ? 'selected' : ''}>${u.name}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+                <span style="color: ${idea.status === 'В работе' ? '#f5c043' : '#4ade80'}; font-weight: bold;">
+                    ${idea.status}
+                </span>
             </div>
         </div>
     `).join('');
 }
+
+window.assignIdea = function(ideaId, assigneeName) {
+    const idea = dbIdeas.find(i => i.id === ideaId);
+    if (idea) {
+        idea.assignee = assigneeName;
+        idea.status = assigneeName ? 'В работе' : 'Новое';
+        renderIdeas();
+    }
+};
