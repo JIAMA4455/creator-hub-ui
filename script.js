@@ -1015,3 +1015,27 @@ document.addEventListener('DOMContentLoaded', () => {
         renderReportsTable();
     }
 });
+
+// --- IDEAS ---
+let dbIdeas = [
+    {id: 1, title: 'Формат "А что если?"', author: 'Даниил', status: 'В работе', assignee: 'user_admin', tag: 'Эксперимент'},
+    {id: 2, title: 'Разбор нейросети X', author: 'Алексей', status: 'Новое', assignee: '', tag: 'Обзор'}
+];
+
+function renderIdeas(viewMode = 'linear') {
+    const container = document.getElementById('ideas-container');
+    if (!container) return;
+    
+    container.innerHTML = dbIdeas.map(idea => `
+        <div style="background: #2b2d31; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid ${idea.status === 'В работе' ? '#f5c043' : '#4ade80'}">
+            <div style="display: flex; justify-content: space-between;">
+                <h3 style="color: white; margin: 0 0 10px 0;">${idea.title}</h3>
+                <span style="font-size: 12px; padding: 2px 8px; border-radius: 4px; background: #1e1f22; color: #b5bac1;">${idea.tag}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                <span style="color: #888;">Автор: ${idea.author}</span>
+                <span style="color: ${idea.status === 'В работе' ? '#f5c043' : '#4ade80'};">${idea.status}</span>
+            </div>
+        </div>
+    `).join('');
+}
