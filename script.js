@@ -7,7 +7,7 @@ let currentUser = null;
 // Initialize default users in localStorage FIRST
 if (!localStorage.getItem('ch_users')) {
     localStorage.setItem('ch_users', JSON.stringify([
-        {id: 'user_admin', name: 'Даниил', role: 'Admin', active: true, token: 'ADMIN-SECRET-2026'}
+        {id: 'user_admin', name: 'Даниил', role: 'Admin', active: true, token: 'ADMIN-SECRET-2026', createdAt: new Date().toLocaleDateString('ru-RU')}
     ]));
 }
 
@@ -164,7 +164,13 @@ function renderComments(idea) {
     idea.comments.forEach(c => {
         const div = document.createElement('div');
         div.className = 'comment-bubble';
-        div.innerHTML = `<span class="comment-author">${c.author}</span><span class="comment-text">${c.text}</span>`;
+        
+        // Найти пользователя по имени автора для кликабельного профиля
+        const authorUser = dbUsers.find(u => u.name === c.author);
+        const authorId = authorUser ? authorUser.id : null;
+        const authorClickable = authorId ? `style="color: var(--text-link); cursor: pointer;" onclick="openCreatorProfile('${authorId}')"` : '';
+        
+        div.innerHTML = `<span class="comment-author" ${authorClickable}>${c.author}</span><span class="comment-text">${c.text}</span>`;
         list.appendChild(div);
     });
     list.scrollTop = list.scrollHeight;
@@ -209,6 +215,11 @@ function renderLinearView() {
         card.className = 'idea-card';
         card.onclick = () => openCommentsModal(idea.id);
         
+        // Найти пользователя по имени автора для кликабельного профиля
+        const authorUser = dbUsers.find(u => u.name === idea.author);
+        const authorId = authorUser ? authorUser.id : null;
+        const authorClickable = authorId ? `style="color: var(--text-link); cursor: pointer;" onclick="event.stopPropagation(); openCreatorProfile('${authorId}')"` : '';
+        
         card.innerHTML = `
             <div class="idea-header">
                 <div class="idea-title">${idea.title}</div>
@@ -216,7 +227,7 @@ function renderLinearView() {
             </div>
             <p class="idea-desc">${idea.desc}</p>
             <div class="idea-footer">
-                <span class="idea-meta">Автор: ${idea.author}</span>
+                <span class="idea-meta">Автор: <span ${authorClickable}>${idea.author}</span></span>
                 <div class="idea-actions">
                     <span class="action-btn">💬 ${idea.comments.length}</span>
                     <span class="action-btn ${likeClass}" onclick="toggleLike(${idea.id}, event)">${likeHeart} ${idea.likedBy.length}</span>
@@ -367,6 +378,7 @@ function openCreatorProfile(userId) {
                 <input type="text" id="tt-username-input" class="form-input" style="margin:0; width:150px; padding: 4px 8px;" placeholder="@username" value="${user.tiktokUsername || ''}">
                 <button class="btn-primary" style="padding: 4px 10px;" onclick="saveTikTokUsername()">Сохранить</button>
             </div>
+            <div style="margin-top: 10px; font-size: 12px; color: var(--text-muted);">Вы можете редактировать свой профиль</div>
         `;
     } else {
         ttSection.innerHTML = user.tiktokUsername 
@@ -374,7 +386,60 @@ function openCreatorProfile(userId) {
             : `<div style="color:var(--text-muted);">TikTok не указан</div>`;
     }
 
+    // Добавляем дополнительную информацию о пользователе
+    const userInfoHtml = `
+        <div style="margin-top: 15px; display: flex; flex-wrap: wrap; gap: 15px; font-size: 13px;">
+            <div style="background: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px;">
+                <div style="color: var(--text-muted); font-size: 11px;">Аккаунт создан</div>
+                <div>${user.createdAt || 'Не известно'}</div>
+            </div>
+            <div style="background: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px;">
+                <div style="color: var(--text-muted); font-size: 11px;">Статус</div>
+                <div style="color: ${user.active ? 'var(--green)' : 'var(--red)'};">${user.active ? 'Активен' : 'Неактивен'}</div>
+            </div>
+            <div style="background: var(--bg-tertiary); padding: 8px 12px; border-radius: 6px;">
+                <div style="color: var(--text-muted); font-size: 11px;">ID пользователя</div>
+                <div style="font-family: monospace; font-size: 12px;">${user.id}</div>
+            </div>
+        </div>
+    `;
+    
+    // Найти куда вставить или обновить контейнер
+    let userInfoContainer = document.getElementById('cp-user-info');
+    if (!userInfoContainer) {
+        userInfoContainer = document.createElement('div');
+        userInfoContainer.id = 'cp-user-info';
+        ttSection.parentNode.insertBefore(userInfoContainer, ttSection.nextSibling);
+    }
+    userInfoContainer.innerHTML = userInfoHtml;
+
     renderTikTokMetrics(user);
+    
+    // Если это свой профиль, добавляем кнопку редактирования
+    if (isMe) {
+        setTimeout(addEditProfileButton, 100);
+    }
+}
+
+function addEditProfileButton() {
+    const profileHeader = document.querySelector('.profile-header');
+    if (!profileHeader) return;
+    
+    const existingEditBtn = document.getElementById('edit-profile-btn');
+    if (existingEditBtn) return;
+    
+    const editBtn = document.createElement('button');
+    editBtn.id = 'edit-profile-btn';
+    editBtn.className = 'btn-primary';
+    editBtn.style.cssText = 'position: absolute; top: 30px; right: 30px;';
+    editBtn.innerHTML = '✏️ Редактировать профиль';
+    editBtn.onclick = function() {
+        // Открываем модальное окно редактирования профиля
+        alert('Редактирование профиля в разработке');
+    };
+    
+    profileHeader.style.position = 'relative';
+    profileHeader.appendChild(editBtn);
 }
 
 function saveTikTokUsername() {
@@ -384,8 +449,29 @@ function saveTikTokUsername() {
         let cleanUsername = input.replace(/^@/, '');
         user.tiktokUsername = cleanUsername ? '@' + cleanUsername : '';
         saveDB();
+        
+        // Автоматически добавляем аккаунт в список tiktokAccounts
+        if (cleanUsername && !tiktokAccounts.find(a => a.username.toLowerCase() === cleanUsername.toLowerCase())) {
+            tiktokAccounts.push({
+                username: cleanUsername,
+                owner: user.name,
+                followers: '0',
+                likes: '0',
+                er: '0%',
+                avatar: user.tiktokAvatar || ('https://ui-avatars.com/api/?name=' + cleanUsername + '&background=random'),
+                addedAt: new Date().toLocaleDateString('ru-RU'),
+                userId: user.id
+            });
+            localStorage.setItem('tiktokAccounts', JSON.stringify(tiktokAccounts));
+        }
+        
+        // Обновляем список аккаунтов если вкладка активна
+        if (typeof renderAccountsList === 'function') {
+            renderAccountsList();
+        }
+        
         renderTikTokMetrics(user);
-        alert("TikTok аккаунт сохранен!");
+        alert("TikTok аккаунт сохранен и добавлен в аналитику!");
     }
 }
 
@@ -403,11 +489,35 @@ function renderTikTokMetrics(user) {
         emptyMsg.style.display = 'none';
         syncBtn.style.display = 'inline-block';
         
-        const m = user.tiktokMetrics || { followers: '---', likes: '---', videos: '---', er: '---' };
-        document.getElementById('tt-followers').innerText = m.followers;
-        document.getElementById('tt-likes').innerText = m.likes;
-        document.getElementById('tt-videos').innerText = m.videos;
-        document.getElementById('tt-er').innerText = m.er;
+        // Получаем данные из tiktokAccounts, если есть
+        const cleanUsername = user.tiktokUsername.replace('@', '');
+        const tiktokAccount = tiktokAccounts.find(a => a.username.toLowerCase() === cleanUsername.toLowerCase());
+        
+        if (tiktokAccount) {
+            // Используем данные из tiktokAccounts
+            document.getElementById('tt-followers').innerText = tiktokAccount.followers || '---';
+            document.getElementById('tt-likes').innerText = tiktokAccount.likes || '---';
+            document.getElementById('tt-videos').innerText = tiktokAccount.videos || '---';
+            document.getElementById('tt-er').innerText = tiktokAccount.er || '---';
+            
+            // Сохраняем в user.tiktokMetrics для совместимости
+            if (!user.tiktokMetrics) {
+                user.tiktokMetrics = {
+                    followers: tiktokAccount.followers || '---',
+                    likes: tiktokAccount.likes || '---',
+                    videos: tiktokAccount.videos || '---',
+                    er: tiktokAccount.er || '---'
+                };
+                saveDB();
+            }
+        } else {
+            // Используем старые данные или заглушки
+            const m = user.tiktokMetrics || { followers: '---', likes: '---', videos: '---', er: '---' };
+            document.getElementById('tt-followers').innerText = m.followers;
+            document.getElementById('tt-likes').innerText = m.likes;
+            document.getElementById('tt-videos').innerText = m.videos;
+            document.getElementById('tt-er').innerText = m.er;
+        }
     }
 }
 
@@ -431,7 +541,7 @@ async function syncTikTokData() {
         
         const data = await response.json();
         
-        // Сохраняем реальные данные
+        // Сохраняем реальные данные в пользователя
         user.tiktokMetrics = {
             followers: data.followers,
             likes: data.likes,
@@ -442,8 +552,42 @@ async function syncTikTokData() {
             user.tiktokAvatar = data.avatar;
         }
         
+        // Также обновляем данные в tiktokAccounts
+        let tiktokAccount = tiktokAccounts.find(a => a.username.toLowerCase() === cleanUsername.toLowerCase());
+        if (tiktokAccount) {
+            // Обновляем существующий аккаунт
+            tiktokAccount.followers = data.followers;
+            tiktokAccount.likes = data.likes;
+            tiktokAccount.er = data.er;
+            tiktokAccount.avatar = data.avatar || tiktokAccount.avatar;
+            tiktokAccount.userId = user.id;
+            tiktokAccount.lastSynced = new Date().toLocaleString('ru-RU');
+        } else {
+            // Создаем новый аккаунт
+            tiktokAccounts.push({
+                username: cleanUsername,
+                owner: user.name,
+                followers: data.followers,
+                likes: data.likes,
+                er: data.er,
+                avatar: data.avatar || ('https://ui-avatars.com/api/?name=' + cleanUsername + '&background=random'),
+                addedAt: new Date().toLocaleDateString('ru-RU'),
+                lastSynced: new Date().toLocaleString('ru-RU'),
+                userId: user.id
+            });
+        }
+        
+        // Сохраняем оба источника данных
         saveDB();
+        localStorage.setItem('tiktokAccounts', JSON.stringify(tiktokAccounts));
+        
+        // Обновляем список аккаунтов если вкладка активна
+        if (typeof renderAccountsList === 'function') {
+            renderAccountsList();
+        }
+        
         renderTikTokMetrics(user);
+        alert("Данные TikTok успешно синхронизированы!");
         
     } catch (error) {
         console.error("Ошибка парсинга:", error);
@@ -648,13 +792,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function populateOwnerSelect() {
-    // Get users from localStorage or use default
-    const users = JSON.parse(localStorage.getItem('users') || '[{"name":"Даниил"},{"name":"Команда"}]');
+    // Get users from dbUsers
     const select = document.getElementById('new-tt-owner');
     if (select) {
         select.innerHTML = '<option value="">Выберите владельца...</option>';
-        users.forEach(u => {
-            select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+        dbUsers.forEach(u => {
+            if (u.active) {
+                select.innerHTML += `<option value="${u.name}">${u.name}</option>`;
+            }
         });
     }
 }
